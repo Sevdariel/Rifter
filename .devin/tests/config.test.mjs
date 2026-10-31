@@ -269,7 +269,12 @@ test('design acceptance gate keeps Figma order, node IDs, and user-only acceptan
 test('telemetry hook records metadata only', () => {
   const hooks = json('.devin/hooks.v1.json');
   for (const event of ['PreToolUse', 'PostToolUse', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'PostCompaction']) {
-    assert.ok(hooks[event]?.[0]?.hooks?.[0]?.command.includes('.devin/scripts/telemetry-hook.py'), event);
+    const command = hooks[event]?.[0]?.hooks?.[0]?.command ?? '';
+    assert.ok(command.includes('.devin/scripts/telemetry-hook.py'), event);
+    assert.ok(command.startsWith('python3 '), event);
+    assert.match(command, /\|\| python "/, event);
+    assert.match(command, /\|\| py -3 "/, event);
+    assert.ok(command.endsWith('|| true'), event);
   }
   const script = read('.devin/scripts/telemetry-hook.py');
   assert.match(script, /never tool arguments, outputs, or prompt/);
