@@ -1,6 +1,6 @@
 ---
 name: run-tests
-description: Run LolGameReviewer builds, Vitest, cargo, and agent configuration tests without watch mode
+description: Run Rifter builds, Vitest, cargo, and agent configuration tests without watch mode
 triggers:
   - user
   - model

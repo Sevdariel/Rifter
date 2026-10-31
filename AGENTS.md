@@ -1,8 +1,8 @@
-# LolGameReviewer — Agent Instructions
+# Rifter — Agent Instructions
 
 ## Project
 
-LolGameReviewer analyzes a player's League of Legends games with AI coaching. It captures data live during a game and produces the analysis after the game ends.
+Rifter analyzes a player's League of Legends games with AI coaching. It captures data live during a game and produces the analysis after the game ends.
 
 - **Desktop app:** Tauri (Rust backend + Angular UI), Windows and macOS. Live capture from the Live Client Data API (`https://127.0.0.1:2999`), LCU gameflow watch, automatic `.rofl` download, upload queue, replay seek.
 - **Web app:** Angular SPA. The same match analysis and data as the desktop app, plus a 2D fragment player for moments flagged by the AI.

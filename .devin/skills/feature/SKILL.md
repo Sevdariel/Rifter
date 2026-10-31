@@ -1,6 +1,6 @@
 ---
 name: feature
-description: Plan and implement a LolGameReviewer feature across only the affected apps and packages
+description: Plan and implement a Rifter feature across only the affected apps and packages
 triggers:
   - user
   - model

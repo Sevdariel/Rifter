@@ -1,6 +1,6 @@
 ---
 name: figma-designer
-description: Build and maintain LolGameReviewer views, reusable components, and design tokens in Figma through FigmaBridge
+description: Build and maintain Rifter views, reusable components, and design tokens in Figma through FigmaBridge
 model: swe-2-max
 allowed-tools:
   - read

@@ -1,6 +1,6 @@
 ---
 name: bugfix
-description: Reproduce and fix a LolGameReviewer bug with a failing regression test and minimal scope
+description: Reproduce and fix a Rifter bug with a failing regression test and minimal scope
 triggers:
   - user
   - model

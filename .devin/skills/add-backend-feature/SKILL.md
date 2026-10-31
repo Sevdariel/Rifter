@@ -1,6 +1,6 @@
 ---
 name: add-backend-feature
-description: Add or extend a NestJS module in the LolGameReviewer API with Vitest tests
+description: Add or extend a NestJS module in the Rifter API with Vitest tests
 triggers:
   - user
   - model

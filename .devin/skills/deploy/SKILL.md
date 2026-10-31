@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Verify and deploy LolGameReviewer components to an explicitly confirmed environment
+description: Verify and deploy Rifter components to an explicitly confirmed environment
 triggers:
   - user
 ---
