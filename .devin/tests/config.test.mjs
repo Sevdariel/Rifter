@@ -266,17 +266,14 @@ test('design acceptance gate keeps Figma order, node IDs, and user-only acceptan
   assert.match(read('.devin/agents/figma-designer.md'), /Never mark a design as accepted/);
 });
 
-test('telemetry hook records metadata only', () => {
+test('telemetry hook is one cross-platform Node command that records metadata only', () => {
   const hooks = json('.devin/hooks.v1.json');
+  const expected = 'node "${DEVIN_PROJECT_DIR:-.}/.devin/scripts/telemetry-hook.mjs" || true';
   for (const event of ['PreToolUse', 'PostToolUse', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'PostCompaction']) {
-    const command = hooks[event]?.[0]?.hooks?.[0]?.command ?? '';
-    assert.ok(command.includes('.devin/scripts/telemetry-hook.py'), event);
-    assert.ok(command.startsWith('python3 '), event);
-    assert.match(command, /\|\| python "/, event);
-    assert.match(command, /\|\| py -3 "/, event);
-    assert.ok(command.endsWith('|| true'), event);
+    assert.equal(hooks[event]?.[0]?.hooks?.[0]?.command, expected, event);
   }
-  const script = read('.devin/scripts/telemetry-hook.py');
-  assert.match(script, /never tool arguments, outputs, or prompt/);
-  assert.doesNotMatch(script, /record\["(prompt|tool_input|output)"\]/);
+  const script = read('.devin/scripts/telemetry-hook.mjs');
+  assert.match(script, /never tool arguments, outputs, or prompt\s+text/);
+  assert.doesNotMatch(script, /record\.(prompt|tool_input|output)\b/);
+  assert.equal(existsSync(resolve(root, '.devin/scripts/telemetry-hook.py')), false);
 });
