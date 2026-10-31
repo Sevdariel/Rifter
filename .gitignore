@@ -1,0 +1,35 @@
+# Dependencies and build output
+node_modules/
+dist/
+.angular/
+coverage/
+target/
+**/src-tauri/gen/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Agent local configuration and telemetry
+.devin/mcp_config.local.json
+.devin/config.local.json
+.devin/telemetry/
+.devin/tmp/
+
+# Visual references (may contain personal data)
+.figma-refs/
+
+# Replay files and captures (personal game data)
+*.rofl
+captures/
+
+# Editors and OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
