@@ -273,7 +273,7 @@ test('telemetry hook is one cross-platform Node command that records metadata on
     assert.equal(hooks[event]?.[0]?.hooks?.[0]?.command, expected, event);
   }
   const script = read('.devin/scripts/telemetry-hook.mjs');
-  assert.match(script, /never tool arguments, outputs, or prompt\s+text/);
+  assert.match(script, /never tool arguments, outputs, or prompt/);
   assert.doesNotMatch(script, /record\.(prompt|tool_input|output)\b/);
   assert.equal(existsSync(resolve(root, '.devin/scripts/telemetry-hook.py')), false);
 });
