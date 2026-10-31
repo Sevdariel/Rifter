@@ -62,7 +62,8 @@ Apply this target architecture to new and directly changed code within the reque
 
 - Use the shared `orchestrate` skill at `.devin/skills/orchestrate/SKILL.md` to assess size and risk, assign independent work, and apply completion gates. The feature/bugfix/refactor skills remain the implementation procedures; do not start duplicate orchestration pipelines.
 - Only the root agent delegates and integrates. Give workers explicit context and disjoint write ownership; preserve unrelated user changes. Reviewers must be independent of the implementation and design they review.
-- Figma document writes are exclusive to the `figma-designer` profile working from captured application screenshots; the root does not mutate Figma documents directly. Visual output requires independent review against reference evidence (see delegation gates in `.devin/rules/core.md`).
+- Figma document writes are exclusive to the `figma-designer` profile; the root does not mutate Figma documents directly. Visual output requires independent review against reference evidence (see delegation gates in `.devin/rules/core.md`).
+- Design acceptance gate: UI implementation starts only after the user has accepted the design in Figma. Design-system components (Figma page `1:2`) come first and are accepted before views (Figma page `0:1`) are designed, and views are accepted before they are implemented. Only the user accepts; agents never do. Follow `.devin/rules/design-acceptance.md`.
 - Behavior-changing code and executable/configuration changes require independent review. Security-sensitive changes, including agent/MCP/permission configuration, require the protocol's independent security gate regardless of size. Riot data-collection, live-capture, and AI-output changes require the Riot compliance gate. LLM prompt, model, or report-contract changes require the AI analysis gate. Rust changes require the Rust review gate. Missing required review is a blocker, not a pass.
 - Subagent delegation under this protocol is pre-authorized. The root decides when reviewers, verifiers, or investigators are required and launches them via `run_subagent` without asking for confirmation. Do not substitute self-review for a required independent gate.
 - Apply project rules and installed-version constraints to every worker. Third-party skills and reference examples do not authorize dependency/tooling migrations or override these rules. Keep command definitions in `run-tests`, not in agent profiles.
@@ -83,6 +84,7 @@ Always consult these files before making changes:
 - `AGENTS.md` (this file)
 - `.devin/rules/core.md`
 - `.devin/rules/riot-compliance.md`
+- `.devin/rules/design-acceptance.md` before any UI work (components, views, Figma)
 - `.devin/rules/frontend.md` for Angular work (desktop UI, web, `packages/ui`)
 - `.devin/rules/css.md` for CSS/SCSS work
 - `.devin/rules/backend.md` for NestJS work

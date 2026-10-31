@@ -37,6 +37,7 @@ The gate applies equally to tail follow-up fixes after the main change set, not 
 The following routing rules are non-negotiable and do not depend on task size:
 
 - Figma document mutations are performed only by the `figma-designer` profile, supplied with reference screenshots captured from the running application (or user-supplied equivalents). The root does not call document-mutating `figma_*` tools itself. Without visual reference evidence the assignment is `BLOCKED`, not approximated from component source.
+- Design acceptance: no UI implementation without the user's acceptance of the matching Figma node. Order is design system (`1:2`) first, then views (`0:1`), then code. Only the user accepts (explicit confirmation recorded in `docs/design/acceptance.md`); reviewer reports, figma-designer output, and tests never count as acceptance. An unaccepted or changed-since-acceptance design `BLOCKED`s the implementation. See `.devin/rules/design-acceptance.md`.
 - Figma specs must derive visual values (colors, radiuses, spacing) from design tokens: read the token SCSS sources and compute exact composites (e.g. an rgba tint over its intended background) instead of supplying approximate hex values.
 - Visual deliverables are verified by a reviewer that did not produce them, comparing exported previews against the reference evidence before completion is reported. Self-export plus self-approval is not verification.
 - Figma frame specs must include a per-view control inventory (every observable element in the reference mapped to a planned node or marked `omitted`) — see `capture-refs` manifest. A spec without the inventory is incomplete; missing controls are the main cause of review rounds.
@@ -158,6 +159,9 @@ Use these as read-only runtime exercises after configuration changes, not as pro
 | Prompt wording change only | AI analysis gate with golden-output diff; code review; no live LLM calls in tests |
 | Rust parser fix for a new patch | Malformed/new-patch fixture test, rust-reviewer and code-reviewer, `cargo` checks from run-tests |
 | New Tauri capability or plugin scope | Security gate and rust-reviewer regardless of size |
+| New view requested, no accepted Figma design | `BLOCKED` for implementation; figma-designer drafts the missing design-system elements, then the view, and the user accepts each step |
+| Accepted design-system button changed in Figma | Reopen dependent views for user acceptance before updating code |
+| Reviewer marks a Figma design "accepted" | Not acceptance; ask the user to confirm in writing |
 | Deployment requested | Follow user-only deploy skill, verify artifact-bound review evidence, and obtain exact action approval |
 
 Structural tests check metadata, links, and contract presence only. Runtime exercises must separately verify discovery, effective tools, scheduling, and these decisions. Report checks that require a reload or unavailable capabilities as unverified.

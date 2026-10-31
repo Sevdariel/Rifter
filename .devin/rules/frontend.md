@@ -14,6 +14,7 @@ globs:
 
 Follow repository-root `AGENTS.md` for scope, architecture, tests, and verification.
 
+- Do not implement a component or view before the user has accepted its Figma design (`.devin/rules/design-acceptance.md`).
 - Verify installed versions in the frontend manifests and lockfile before applying version-specific guidance.
 - Before Angular work, discover the available MCP tools and use Angular MCP `list_projects` and `get_best_practices` for the target workspace. If required tools are unavailable, report the blocker rather than inventing tool names or results.
 - Follow the `angular-developer` skill for the installed version.

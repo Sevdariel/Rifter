@@ -14,6 +14,7 @@ Standalone: the root applies `.devin/skills/orchestrate/SKILL.md` and owns final
 
 Delegated: follow the assigned contract and file ownership. Do not delegate or close final gates; return changes, focused test evidence, and integration needs to the root.
 
+0. Design gate (before any code): confirm in `docs/design/acceptance.md` that the user accepted the Figma node for every component and view this feature uses, and that all elements come from accepted design-system components (`1:2`) before views (`0:1`). If not, stop and ask the user to review the design. See `.devin/rules/design-acceptance.md`.
 1. Decide where the code belongs: `packages/ui` when both desktop and web render it (report views, 2D replay player, tier badges), otherwise `apps/web/src/app/<feature>/` or `apps/desktop/src/app/<feature>/`. Add only the components, services, models, and routes the request needs.
 2. Add Vitest tests for the expected behavior, preferably failing before implementation.
 3. Implement standalone components with signals, `input()`/`output()`, native control flow, and `inject()`. HTTP calls live in API services; Tauri calls live in the desktop bridge services; shared components take data through inputs only.

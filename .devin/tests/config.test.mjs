@@ -17,7 +17,7 @@ const agentNames = [
   'ai-analysis-reviewer', 'architect', 'code-reviewer', 'figma-designer', 'public-researcher', 'researcher',
   'riot-compliance-reviewer', 'rust-reviewer', 'security-reviewer', 'session-analyst', 'test-engineer', 'ux-reviewer',
 ];
-const ruleNames = ['analysis', 'backend', 'core', 'css', 'desktop', 'frontend', 'riot-compliance', 'rust'];
+const ruleNames = ['analysis', 'backend', 'core', 'css', 'desktop', 'design-acceptance', 'frontend', 'riot-compliance', 'rust'];
 const orchestrationPath = '.devin/skills/orchestrate/SKILL.md';
 const frontmatter = (path) => {
   const header = read(path).match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
@@ -250,6 +250,20 @@ test('figma bridge field notes stay pinned to the configured server version', ()
   const version = json('.devin/mcp_config.json').mcpServers['figma-mcp-bridge'].args[1].split('@').pop();
   assert.ok(read('.devin/references/figma-mcp-bridge.md').includes(version));
   assert.ok(read(orchestrationPath).includes('references/figma-mcp-bridge.md'));
+});
+
+test('design acceptance gate keeps Figma order, node IDs, and user-only acceptance', () => {
+  const rule = read('.devin/rules/design-acceptance.md');
+  assert.match(frontmatter('.devin/rules/design-acceptance.md'), /^trigger: always_on$/m);
+  for (const requirement of ['1:2', '0:1', 'l34FZ4ZhQpkOc172pkcjfs', 'Only the user accepts', 'docs/design/acceptance.md', 'Design system first', 'Implementation last']) {
+    assert.ok(rule.includes(requirement), requirement);
+  }
+  assert.ok(read('AGENTS.md').includes('.devin/rules/design-acceptance.md'));
+  assert.ok(read('.devin/rules/core.md').includes('Agents never accept designs'));
+  assert.ok(read('.devin/skills/orchestrate/SKILL.md').includes('Only the user accepts'));
+  assert.ok(read('.devin/skills/add-frontend-feature/SKILL.md').includes('docs/design/acceptance.md'));
+  assert.ok(read('.devin/skills/feature/SKILL.md').includes('docs/design/acceptance.md') || read('.devin/skills/feature/SKILL.md').includes('design-acceptance.md'));
+  assert.match(read('.devin/agents/figma-designer.md'), /Never mark a design as accepted/);
 });
 
 test('telemetry hook records metadata only', () => {
