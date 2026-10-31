@@ -52,7 +52,7 @@ test('project skills have discoverable names, descriptions, and explicit trigger
     const header = frontmatter(`.devin/skills/${name}/SKILL.md`);
     assert.equal(header.match(/^name: (.+)$/m)?.[1].trim(), name);
     assert.match(header, /^description: \S.+$/m);
-    assert.deepEqual(listField(header, 'triggers'), name === 'deploy' ? ['user'] : ['user', 'model'], name);
+    assert.deepEqual(listField(header, 'triggers'), ['deploy', 'session-retro'].includes(name) ? ['user'] : ['user', 'model'], name);
   }
 });
 

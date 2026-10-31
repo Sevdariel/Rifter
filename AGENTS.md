@@ -37,6 +37,7 @@ These are product rules, not style preferences. Read `.devin/rules/riot-complian
 
 Apply this target architecture to new and directly changed code within the requested scope.
 
+- **Target platforms:** the product is developed and released for Windows and macOS. Live capture (LCU, Live Client Data) and the desktop app must work on both. Linux is not a target because League of Legends does not run there. Platform-specific code (lockfile and replay paths, keychain, file watching) has an implementation per OS and tests for both branches. Tooling and scripts (hooks, scripts, CI steps) must run unchanged on both systems, so prefer Node.js or another tool the project already requires over shell-specific or single-OS commands.
 - **Data tiers:** every match has a tier. `basic` = Match-V5 only (positions every 60 s). `full` = parsed `.rofl` available (positions every 1 s, wards). The UI always shows the tier. The web app defaults to `basic` until the desktop app syncs the replay.
 - **Analysis pipeline:** deterministic metrics first (code), then moment detection from the timeline (code), then the LLM receives curated facts and returns a report with `moments[]` (`t_start`, `t_end`, `label`, `mistake`, `fix`). The LLM never receives raw dumps and never invents timestamps that are not anchored to timeline events.
 - **Secrets:** Riot API keys and LLM API keys exist only on the backend or in the user's local OS keychain for desktop. Never in web bundles, never in the repository.
