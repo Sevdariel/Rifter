@@ -18,11 +18,11 @@ Only the root agent spawns subagents. Planning or read-only requests remain read
 
 Record size, risk, affected layers, acceptance criteria, unknowns, and the reason to delegate or work alone. Assess actual code and data flows, not just keywords or file extensions. Reassess when scope or findings change.
 
-| Size | Indicators | Analysis and implementation |
-| --- | --- | --- |
-| Small | Clear local change with understood dependencies | Root works directly; avoid analysis workers that duplicate its work |
-| Medium | Several related components or an uncertain boundary | Delegate a focused investigation when it adds value |
-| Large | Multiple layers/slices, contracts, or independent work streams | Plan first; run independent analyses concurrently, synthesize, then assign implementation |
+| Size   | Indicators                                                     | Analysis and implementation                                                               |
+| ------ | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Small  | Clear local change with understood dependencies                | Root works directly; avoid analysis workers that duplicate its work                       |
+| Medium | Several related components or an uncertain boundary            | Delegate a focused investigation when it adds value                                       |
+| Large  | Multiple layers/slices, contracts, or independent work streams | Plan first; run independent analyses concurrently, synthesize, then assign implementation |
 
 Classify risk separately as ordinary, elevated, or security-sensitive. Risk overrides size. A one-line authorization change is security-sensitive. Changes to authentication, authorization, tenant/user isolation, personal data, tokens/cookies/secrets, uploads/file handling, untrusted HTML/queries/redirects/URLs, external integrations, command execution, or security-relevant dependency/configuration controls require the security gate. Agent rules, profiles, skills, MCP, and permission changes that alter execution also require that gate because they control execution. An ordinary static template or documentation edit is not sensitive merely because of its extension. In this project, `.rofl` upload/parsing, RSO, Riot/LLM key handling, LCU lockfile access, the Live Client Data TLS exception, and Tauri capabilities/permissions/CSP are security-sensitive.
 
@@ -48,21 +48,21 @@ The following routing rules are non-negotiable and do not depend on task size:
 
 ## Specialists
 
-| Assignment | Profile | Reuse |
-| --- | --- | --- |
-| Requirements, repository evidence, unresolved assumptions | [researcher](../../agents/researcher.md) | Local source analysis without network access |
-| Public documentation and external standards | [public-researcher](../../agents/public-researcher.md) | Sanitized public context without repository access |
-| Existing code, contracts, dependencies, technical plan | [architect](../../agents/architect.md) | Existing apps/packages and applicable domain rules |
-| Interaction design and accessibility review | [ux-reviewer](../../agents/ux-reviewer.md) | Angular guidance already in the repository |
-| Riot policy review of data sources, live features, replays, output timing | [riot-compliance-reviewer](../../agents/riot-compliance-reviewer.md) | Assign `DESIGN_REVIEW` or `FINAL_REVIEW`; current policy extracts via public-researcher |
-| LLM prompts, model config, report contract, moment detection | [ai-analysis-reviewer](../../agents/ai-analysis-reviewer.md) | Prompt files, schema, golden outputs, recorded responses |
-| Rust safety, IPC, async, untrusted input | [rust-reviewer](../../agents/rust-reviewer.md) | `cargo fmt`/`clippy`/`test` evidence from run-tests |
-| Scoped Figma views, components, and design tokens | [figma-designer](../../agents/figma-designer.md) | FigmaBridge connection; mandatory reference screenshots of the running application supplied by the root — see Hard gates |
-| Threat model or independent final security review | [security-reviewer](../../agents/security-reviewer.md) | Assign `THREAT_MODEL` or `FINAL_REVIEW`; security gate below |
-| Independent correctness and regression review | [code-reviewer](../../agents/code-reviewer.md) | Final change set and acceptance criteria |
-| Verification plan, execution, coverage assessment | [test-engineer](../../agents/test-engineer.md) | [run-tests](../run-tests/SKILL.md), never a duplicate command catalog |
-| Implementation and regression tests | Root or `subagent_general` | [add-frontend-feature](../add-frontend-feature/SKILL.md), [add-backend-feature](../add-backend-feature/SKILL.md), [add-desktop-feature](../add-desktop-feature/SKILL.md), [add-analysis-feature](../add-analysis-feature/SKILL.md), or the assigned bugfix/refactor steps |
-| Session retrospective: quality, time, and token-cost analysis | [session-analyst](../../agents/session-analyst.md) | Session transcript/summary path supplied by the root; user-triggered, never a pipeline gate |
+| Assignment                                                                | Profile                                                              | Reuse                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Requirements, repository evidence, unresolved assumptions                 | [researcher](../../agents/researcher.md)                             | Local source analysis without network access                                                                                                                                                                                                                              |
+| Public documentation and external standards                               | [public-researcher](../../agents/public-researcher.md)               | Sanitized public context without repository access                                                                                                                                                                                                                        |
+| Existing code, contracts, dependencies, technical plan                    | [architect](../../agents/architect.md)                               | Existing apps/packages and applicable domain rules                                                                                                                                                                                                                        |
+| Interaction design and accessibility review                               | [ux-reviewer](../../agents/ux-reviewer.md)                           | Angular guidance already in the repository                                                                                                                                                                                                                                |
+| Riot policy review of data sources, live features, replays, output timing | [riot-compliance-reviewer](../../agents/riot-compliance-reviewer.md) | Assign `DESIGN_REVIEW` or `FINAL_REVIEW`; current policy extracts via public-researcher                                                                                                                                                                                   |
+| LLM prompts, model config, report contract, moment detection              | [ai-analysis-reviewer](../../agents/ai-analysis-reviewer.md)         | Prompt files, schema, golden outputs, recorded responses                                                                                                                                                                                                                  |
+| Rust safety, IPC, async, untrusted input                                  | [rust-reviewer](../../agents/rust-reviewer.md)                       | `cargo fmt`/`clippy`/`test` evidence from run-tests                                                                                                                                                                                                                       |
+| Scoped Figma views, components, and design tokens                         | [figma-designer](../../agents/figma-designer.md)                     | FigmaBridge connection; mandatory reference screenshots of the running application supplied by the root — see Hard gates                                                                                                                                                  |
+| Threat model or independent final security review                         | [security-reviewer](../../agents/security-reviewer.md)               | Assign `THREAT_MODEL` or `FINAL_REVIEW`; security gate below                                                                                                                                                                                                              |
+| Independent correctness and regression review                             | [code-reviewer](../../agents/code-reviewer.md)                       | Final change set and acceptance criteria                                                                                                                                                                                                                                  |
+| Verification plan, execution, coverage assessment                         | [test-engineer](../../agents/test-engineer.md)                       | [run-tests](../run-tests/SKILL.md), never a duplicate command catalog                                                                                                                                                                                                     |
+| Implementation and regression tests                                       | Root or `subagent_general`                                           | [add-frontend-feature](../add-frontend-feature/SKILL.md), [add-backend-feature](../add-backend-feature/SKILL.md), [add-desktop-feature](../add-desktop-feature/SKILL.md), [add-analysis-feature](../add-analysis-feature/SKILL.md), or the assigned bugfix/refactor steps |
+| Session retrospective: quality, time, and token-cost analysis             | [session-analyst](../../agents/session-analyst.md)                   | Session transcript/summary path supplied by the root; user-triggered, never a pipeline gate                                                                                                                                                                               |
 
 Do not launch every role by default. Use repository research for local evidence, public research only when external sources are needed, architecture analysis for uncertain/cross-module contracts, and UX review for meaningful interaction or accessibility changes. Never give the public-researcher private code, patches, repository paths, personal data, credentials, secrets, or unsanitized task details. Read third-party guidance in place, preserve local compatibility notes, and prefer installed-version evidence over generic examples. MCP discovery and required Angular best-practices checks remain mandatory for applicable Angular work. The root obtains and supplies evidence from tools unavailable to a restricted worker; do not broaden reviewer tools to run implementation or migration workflows.
 
@@ -142,26 +142,26 @@ The root's final summary includes roles used and why, decisions/conflicts resolv
 
 Use these as read-only runtime exercises after configuration changes, not as proof of automatic enforcement:
 
-| Scenario | Expected decision |
-| --- | --- |
-| Small ordinary behavior fix | Root implements with regression test; independent short code review; applicable tests |
-| One-line authorization fix | Security-sensitive regardless of size; independent code/security review and test assessment |
-| Large frontend/backend feature | Parallel independent analysis; agree contract; disjoint writers; integrate before final gates |
-| Two workers need the same route or solution file | Assign a single owner or serialize before writes |
-| Background test tool denied | Report `BLOCKED`; foreground approval, not a retry/bypass loop |
-| Required security reviewer unavailable | Documented independent fallback or `BLOCKED`, never self-approval |
-| Security reviewer reports HIGH | `FAIL`; remediate, re-review and retest before completion |
-| Test passes, then reviewed source changes | Increment change-set ID and invalidate impacted review/test evidence |
-| MEDIUM finding without user acceptance | No completion until remediation or explicit risk acceptance |
-| Agent configuration-only change | Configuration tests, independent code/security review, and runtime discovery exercises |
-| Pure non-sensitive prose edit | Relevant checks; explain implementation/security gates as not applicable |
-| New live-capture overlay showing stats during a game | Riot compliance `DESIGN_REVIEW` before implementation, fresh `FINAL_REVIEW` after; any in-game advice is `FAIL` |
-| Prompt wording change only | AI analysis gate with golden-output diff; code review; no live LLM calls in tests |
-| Rust parser fix for a new patch | Malformed/new-patch fixture test, rust-reviewer and code-reviewer, `cargo` checks from run-tests |
-| New Tauri capability or plugin scope | Security gate and rust-reviewer regardless of size |
-| New view requested, no accepted Figma design | `BLOCKED` for implementation; figma-designer drafts the missing design-system elements, then the view, and the user accepts each step |
-| Accepted design-system button changed in Figma | Reopen dependent views for user acceptance before updating code |
-| Reviewer marks a Figma design "accepted" | Not acceptance; ask the user to confirm in writing |
-| Deployment requested | Follow user-only deploy skill, verify artifact-bound review evidence, and obtain exact action approval |
+| Scenario                                             | Expected decision                                                                                                                     |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Small ordinary behavior fix                          | Root implements with regression test; independent short code review; applicable tests                                                 |
+| One-line authorization fix                           | Security-sensitive regardless of size; independent code/security review and test assessment                                           |
+| Large frontend/backend feature                       | Parallel independent analysis; agree contract; disjoint writers; integrate before final gates                                         |
+| Two workers need the same route or solution file     | Assign a single owner or serialize before writes                                                                                      |
+| Background test tool denied                          | Report `BLOCKED`; foreground approval, not a retry/bypass loop                                                                        |
+| Required security reviewer unavailable               | Documented independent fallback or `BLOCKED`, never self-approval                                                                     |
+| Security reviewer reports HIGH                       | `FAIL`; remediate, re-review and retest before completion                                                                             |
+| Test passes, then reviewed source changes            | Increment change-set ID and invalidate impacted review/test evidence                                                                  |
+| MEDIUM finding without user acceptance               | No completion until remediation or explicit risk acceptance                                                                           |
+| Agent configuration-only change                      | Configuration tests, independent code/security review, and runtime discovery exercises                                                |
+| Pure non-sensitive prose edit                        | Relevant checks; explain implementation/security gates as not applicable                                                              |
+| New live-capture overlay showing stats during a game | Riot compliance `DESIGN_REVIEW` before implementation, fresh `FINAL_REVIEW` after; any in-game advice is `FAIL`                       |
+| Prompt wording change only                           | AI analysis gate with golden-output diff; code review; no live LLM calls in tests                                                     |
+| Rust parser fix for a new patch                      | Malformed/new-patch fixture test, rust-reviewer and code-reviewer, `cargo` checks from run-tests                                      |
+| New Tauri capability or plugin scope                 | Security gate and rust-reviewer regardless of size                                                                                    |
+| New view requested, no accepted Figma design         | `BLOCKED` for implementation; figma-designer drafts the missing design-system elements, then the view, and the user accepts each step |
+| Accepted design-system button changed in Figma       | Reopen dependent views for user acceptance before updating code                                                                       |
+| Reviewer marks a Figma design "accepted"             | Not acceptance; ask the user to confirm in writing                                                                                    |
+| Deployment requested                                 | Follow user-only deploy skill, verify artifact-bound review evidence, and obtain exact action approval                                |
 
 Structural tests check metadata, links, and contract presence only. Runtime exercises must separately verify discovery, effective tools, scheduling, and these decisions. Report checks that require a reload or unavailable capabilities as unverified.

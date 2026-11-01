@@ -2,8 +2,8 @@
 description: Rust rules for the desktop crate and the ROFL parser service
 trigger: glob
 globs:
-  - "**/*.rs"
-  - "**/Cargo.toml"
+  - '**/*.rs'
+  - '**/Cargo.toml'
 ---
 
 # Rust Rules

@@ -2,12 +2,12 @@
 description: Frontend Angular rules
 trigger: glob
 globs:
-  - "apps/web/**/*.ts"
-  - "apps/web/**/*.html"
-  - "apps/desktop/src/**/*.ts"
-  - "apps/desktop/src/**/*.html"
-  - "packages/ui/**/*.ts"
-  - "packages/ui/**/*.html"
+  - 'apps/web/**/*.ts'
+  - 'apps/web/**/*.html'
+  - 'apps/desktop/src/**/*.ts'
+  - 'apps/desktop/src/**/*.html'
+  - 'packages/ui/**/*.ts'
+  - 'packages/ui/**/*.html'
 ---
 
 # Frontend Rules

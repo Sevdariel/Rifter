@@ -13,14 +13,14 @@ Rifter analyzes a player's League of Legends games with AI coaching. It captures
 
 The repository is being bootstrapped. Planned layout (verify on disk before relying on it; the roadmap is the source of truth once written):
 
-| Path | Content |
-| --- | --- |
-| `apps/desktop/` | Tauri app: Angular UI and `src-tauri/` Rust crate |
-| `apps/web/` | Angular web SPA |
-| `apps/api/` | NestJS backend |
-| `services/rofl-parser/` | Rust `.rofl` parser service |
-| `packages/analysis/` | Shared TypeScript analysis library |
-| `packages/ui/` | Shared Angular component library |
+| Path                      | Content                                                                  |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `apps/desktop/`           | Tauri app: Angular UI and `src-tauri/` Rust crate                        |
+| `apps/web/`               | Angular web SPA                                                          |
+| `apps/api/`               | NestJS backend                                                           |
+| `services/rofl-parser/`   | Rust `.rofl` parser service                                              |
+| `packages/analysis/`      | Shared TypeScript analysis library                                       |
+| `packages/ui/`            | Shared Angular component library                                         |
 | `packages/design-tokens/` | Design tokens generated from Figma Variables (`tokens.css`, `tokens.ts`) |
 
 Package manifests, lockfiles, `Cargo.toml`, and project files are the source of truth for installed versions and tooling; verify them before applying version-specific guidance.

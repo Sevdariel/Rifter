@@ -4,7 +4,7 @@
  */
 
 /** Data tier of a match: Match-V5 only (`basic`) or parsed .rofl (`full`). */
-export type DataTier = "basic" | "full";
+export type DataTier = 'basic' | 'full';
 
 /** Version of the analysis report contract. Bump on breaking shape changes. */
 export const REPORT_CONTRACT_VERSION = 0;

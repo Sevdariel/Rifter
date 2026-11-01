@@ -8,11 +8,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rifter}
       POSTGRES_DB: ${POSTGRES_DB:-rifter}
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - rifter-pgdata:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 3s
       retries: 12
@@ -27,7 +27,7 @@ services:
       # Wired for the M2 database module; not consumed yet.
       DATABASE_URL: postgres://${POSTGRES_USER:-rifter}:${POSTGRES_PASSWORD:-rifter}@db:5432/${POSTGRES_DB:-rifter}
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       db:
         condition: service_healthy
@@ -37,7 +37,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     ports:
-      - "4200:80"
+      - '4200:80'
 
 volumes:
   rifter-pgdata:

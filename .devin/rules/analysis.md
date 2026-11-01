@@ -2,8 +2,8 @@
 description: Shared analysis library and LLM integration rules
 trigger: glob
 globs:
-  - "packages/analysis/**"
-  - "apps/api/src/analysis/**"
+  - 'packages/analysis/**'
+  - 'apps/api/src/analysis/**'
 ---
 
 # Analysis Rules

@@ -2,7 +2,7 @@
 description: Desktop Tauri rules
 trigger: glob
 globs:
-  - "apps/desktop/**"
+  - 'apps/desktop/**'
 ---
 
 # Desktop Rules

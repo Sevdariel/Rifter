@@ -16,7 +16,14 @@
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-const EVENTS = new Set(['PreToolUse', 'PostToolUse', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'PostCompaction']);
+const EVENTS = new Set([
+  'PreToolUse',
+  'PostToolUse',
+  'UserPromptSubmit',
+  'SessionStart',
+  'SessionEnd',
+  'PostCompaction',
+]);
 const bytes = (value) => Buffer.byteLength(value, 'utf8');
 const text = (value) => (value ? String(value) : '');
 const chars = (value) => [...text(value)].length;
