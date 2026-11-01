@@ -1,0 +1,12 @@
+{
+  "name": "rifter",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "pnpm@12.15.0+sha512.s5UdbW/0qfE9x89WzSjSuOs328ycaOUuHhGRhz6p+CoBcoerULqtxczElPA2xnwOR+sTYIwvo29HcRth6hKOYQ==",
+  "engines": {
+    "node": "26.8.1"
+  }
+}

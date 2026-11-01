@@ -31,6 +31,7 @@ The LLM runs locally via Ollama on the player's machine — loaded after the gam
 ## Quickstart
 
 ```bash
+pnpm install               # workspace install (Node per .nvmrc, pnpm via packageManager pin)
 docker compose up          # full stack: db + api + web
 docker compose -f docker-compose.backend.yml up   # backend only, for frontend work
 ```
