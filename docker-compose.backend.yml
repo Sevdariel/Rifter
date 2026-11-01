@@ -1,0 +1,36 @@
+name: rifter-backend
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rifter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rifter}
+      POSTGRES_DB: ${POSTGRES_DB:-rifter}
+    ports:
+      - "5432:5432"
+    volumes:
+      - rifter-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Wired for the M2 database module; not consumed yet.
+      DATABASE_URL: postgres://${POSTGRES_USER:-rifter}:${POSTGRES_PASSWORD:-rifter}@db:5432/${POSTGRES_DB:-rifter}
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  rifter-pgdata:

@@ -1,0 +1,14 @@
+.git
+node_modules
+**/node_modules
+**/dist
+**/.angular
+**/coverage
+.devin/tmp
+.figma-refs
+captures
+ToDO
+*.rofl
+**/.env
+**/.env.*
+!**/.env.example
