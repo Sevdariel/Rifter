@@ -72,6 +72,8 @@ Bulk seeding: drive `gh` from a Node script (`execFileSync`, manifest array of e
 - `Done` after the merge to `Develop` is verified on the remote: the agent sets `Done` and closes the issue with a completion comment (commit + merge ref).
 - `Closed` once the change lands on `master` (release merge). The agent sets `Closed` after verifying the commit is on `origin/master`.
 
+Review feedback for a task is recorded as comments on the task issue — both the user's requests and the agent's change notes — so the issue carries the full review history. Post them with `gh issue comment <N>`.
+
 ```bash
 gh project item-edit 1 --owner Sevdariel --url https://github.com/Sevdariel/Rifter/issues/<N> --field Status --value "<Todo|In Progress|Code review|Done|Closed>"
 ```
