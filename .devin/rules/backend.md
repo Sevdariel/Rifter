@@ -2,8 +2,8 @@
 description: Backend NestJS rules
 trigger: glob
 globs:
-  - "apps/api/**/*.ts"
-  - "apps/api/**/*.json"
+  - 'apps/api/**/*.ts'
+  - 'apps/api/**/*.json'
 ---
 
 # Backend Rules

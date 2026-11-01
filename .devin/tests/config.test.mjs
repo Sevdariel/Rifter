@@ -9,23 +9,66 @@ const read = (path) => readFileSync(resolve(root, path), 'utf8');
 const json = (path) => JSON.parse(read(path));
 
 const skillNames = [
-  'add-analysis-feature', 'add-backend-feature', 'add-desktop-feature', 'add-frontend-feature', 'bugfix',
-  'capture-refs', 'deploy', 'feature', 'github', 'orchestrate', 'refactor-slice', 'run-tests', 'session-retro',
+  'add-analysis-feature',
+  'add-backend-feature',
+  'add-desktop-feature',
+  'add-frontend-feature',
+  'bugfix',
+  'capture-refs',
+  'deploy',
+  'feature',
+  'github',
+  'orchestrate',
+  'refactor-slice',
+  'run-tests',
+  'session-retro',
 ];
-const implementationSkills = ['add-analysis-feature', 'add-backend-feature', 'add-desktop-feature', 'add-frontend-feature', 'bugfix', 'feature', 'refactor-slice'];
+const implementationSkills = [
+  'add-analysis-feature',
+  'add-backend-feature',
+  'add-desktop-feature',
+  'add-frontend-feature',
+  'bugfix',
+  'feature',
+  'refactor-slice',
+];
 const agentNames = [
-  'ai-analysis-reviewer', 'architect', 'code-reviewer', 'figma-designer', 'public-researcher', 'researcher',
-  'riot-compliance-reviewer', 'rust-reviewer', 'security-reviewer', 'session-analyst', 'test-engineer', 'ux-reviewer',
+  'ai-analysis-reviewer',
+  'architect',
+  'code-reviewer',
+  'figma-designer',
+  'public-researcher',
+  'researcher',
+  'riot-compliance-reviewer',
+  'rust-reviewer',
+  'security-reviewer',
+  'session-analyst',
+  'test-engineer',
+  'ux-reviewer',
 ];
-const ruleNames = ['analysis', 'backend', 'core', 'css', 'desktop', 'design-acceptance', 'frontend', 'riot-compliance', 'rust'];
+const ruleNames = [
+  'analysis',
+  'backend',
+  'core',
+  'css',
+  'desktop',
+  'design-acceptance',
+  'frontend',
+  'riot-compliance',
+  'rust',
+];
 const orchestrationPath = '.devin/skills/orchestrate/SKILL.md';
 const frontmatter = (path) => {
   const header = read(path).match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
   assert.ok(header, `Missing frontmatter: ${path}`);
   return header;
 };
-const listField = (header, field) => (header.match(new RegExp(`^${field}:\\r?\\n((?:  - [^\\r\\n]+(?:\\r?\\n|$))+)`, 'm'))?.[1] ?? '')
-  .trim().split(/\r?\n/).filter(Boolean).map((line) => line.trim().slice(2));
+const listField = (header, field) =>
+  (header.match(new RegExp(`^${field}:\\r?\\n((?:  - [^\\r\\n]+(?:\\r?\\n|$))+)`, 'm'))?.[1] ?? '')
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => line.trim().slice(2));
 
 test('shared MCP servers use exact pinned versions and no credentials', () => {
   const config = json('.devin/mcp_config.json');
@@ -33,26 +76,41 @@ test('shared MCP servers use exact pinned versions and no credentials', () => {
   assert.deepEqual(Object.keys(config.mcpServers).sort(), ['angular-cli', 'figma-mcp-bridge', 'github']);
   assert.deepEqual(config.mcpServers.github, { url: 'https://api.githubcopilot.com/mcp/' });
   assert.deepEqual(config.mcpServers['angular-cli'], { command: 'npx', args: ['-y', '@angular/cli@22.1.6', 'mcp'] });
-  assert.deepEqual(config.mcpServers['figma-mcp-bridge'], { command: 'npx', args: ['-y', '@magic-spells/figma-mcp-bridge@0.4.0'] });
+  assert.deepEqual(config.mcpServers['figma-mcp-bridge'], {
+    command: 'npx',
+    args: ['-y', '@magic-spells/figma-mcp-bridge@0.4.0'],
+  });
   assert.doesNotMatch(read('.devin/mcp_config.json'), /headers|Bearer|token|github_pat_/i);
 });
 
 test('local agent configuration and personal data stay gitignored', () => {
   const ignore = read('.gitignore');
-  for (const entry of ['.devin/mcp_config.local.json', '.devin/config.local.json', '.devin/telemetry/', '.figma-refs/', '*.rofl', '.env']) {
+  for (const entry of [
+    '.devin/mcp_config.local.json',
+    '.devin/config.local.json',
+    '.devin/telemetry/',
+    '.figma-refs/',
+    '*.rofl',
+    '.env',
+  ]) {
     assert.ok(ignore.split(/\r?\n/).includes(entry), entry);
   }
 });
 
 test('project skills have discoverable names, descriptions, and explicit triggers', () => {
   const directories = readdirSync(resolve(root, '.devin/skills'), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
   for (const name of skillNames) {
     assert.ok(directories.includes(name), `Missing skill: ${name}`);
     const header = frontmatter(`.devin/skills/${name}/SKILL.md`);
     assert.equal(header.match(/^name: (.+)$/m)?.[1].trim(), name);
     assert.match(header, /^description: \S.+$/m);
-    assert.deepEqual(listField(header, 'triggers'), ['deploy', 'session-retro'].includes(name) ? ['user'] : ['user', 'model'], name);
+    assert.deepEqual(
+      listField(header, 'triggers'),
+      ['deploy', 'session-retro'].includes(name) ? ['user'] : ['user', 'model'],
+      name,
+    );
   }
 });
 
@@ -75,7 +133,13 @@ test('rules declare triggers and the compliance rule is always on', () => {
   assert.match(frontmatter('.devin/rules/core.md'), /^trigger: always_on$/m);
   assert.match(frontmatter('.devin/rules/riot-compliance.md'), /^trigger: always_on$/m);
   const compliance = read('.devin/rules/riot-compliance.md');
-  for (const requirement of ['play first, analyze after', 'hidden information', 'input automation', 'scouting', 'riot-compliance-reviewer']) {
+  for (const requirement of [
+    'play first, analyze after',
+    'hidden information',
+    'input automation',
+    'scouting',
+    'riot-compliance-reviewer',
+  ]) {
     assert.match(compliance, new RegExp(requirement, 'i'), requirement);
   }
 });
@@ -108,14 +172,23 @@ test('run-tests skill lists the real workspace commands', () => {
       assert.ok(skill.includes(`pnpm -C ${dir} ${script}`), `run-tests missing: pnpm -C ${dir} ${script}`);
     }
   }
-  for (const command of ['pnpm -r test', 'pnpm -r build', 'docker compose config --quiet', 'docker compose -f docker-compose.backend.yml config --quiet', 'node --test .devin/tests/config.test.mjs']) {
+  for (const command of [
+    'pnpm -r test',
+    'pnpm -r build',
+    'docker compose config --quiet',
+    'docker compose -f docker-compose.backend.yml config --quiet',
+    'node --test .devin/tests/config.test.mjs',
+  ]) {
     assert.ok(skill.includes(command), `run-tests missing: ${command}`);
   }
 });
 
 test('specialist profiles have unique names, swe-2-max model, and least-privilege tools', () => {
   const files = readdirSync(resolve(root, '.devin/agents')).sort();
-  assert.deepEqual(files, agentNames.map((name) => `${name}.md`));
+  assert.deepEqual(
+    files,
+    agentNames.map((name) => `${name}.md`),
+  );
   for (const name of agentNames) {
     const path = `.devin/agents/${name}.md`;
     const header = frontmatter(path);
@@ -147,7 +220,11 @@ test('orchestration and project skills remain inline', () => {
 });
 
 test('entry points use the canonical orchestration protocol without worker recursion', () => {
-  for (const path of ['AGENTS.md', '.devin/rules/core.md', ...[...implementationSkills, 'deploy'].map((name) => `.devin/skills/${name}/SKILL.md`)]) {
+  for (const path of [
+    'AGENTS.md',
+    '.devin/rules/core.md',
+    ...[...implementationSkills, 'deploy'].map((name) => `.devin/skills/${name}/SKILL.md`),
+  ]) {
     assert.ok(read(path).includes(orchestrationPath), `Missing protocol reference: ${path}`);
   }
   for (const name of implementationSkills) {
@@ -160,7 +237,8 @@ test('specialists and orchestration have resolvable local Markdown links', () =>
   const paths = [orchestrationPath, ...agentNames.map((name) => `.devin/agents/${name}.md`)];
   for (const path of paths) {
     const links = [...read(path).matchAll(/\]\(([^)]+)\)/g)].map((match) => match[1]);
-    if (path === '.devin/agents/public-researcher.md') assert.equal(links.length, 0, 'Public researcher must not expose repository links');
+    if (path === '.devin/agents/public-researcher.md')
+      assert.equal(links.length, 0, 'Public researcher must not expose repository links');
     else assert.ok(links.length > 0, `Missing shared instructions: ${path}`);
     for (const link of links) {
       assert.doesNotMatch(link, /^(?:[a-z]+:|\/)/i, `Expected a local relative link: ${link}`);
@@ -179,34 +257,70 @@ test('specialists and orchestration have resolvable local Markdown links', () =>
 test('orchestration defines task, delegation, evidence, and gate contracts', () => {
   const protocol = read(orchestrationPath);
   for (const heading of [
-    'Entry and scope', 'Triage', 'Specialists', 'Delegation contract', 'Scheduling and integration',
-    'Independent verification', 'Security gate', 'Runtime fallback', 'Result contract', 'Acceptance scenarios',
-  ]) assert.ok(protocol.includes(`## ${heading}`), heading);
+    'Entry and scope',
+    'Triage',
+    'Specialists',
+    'Delegation contract',
+    'Scheduling and integration',
+    'Independent verification',
+    'Security gate',
+    'Runtime fallback',
+    'Result contract',
+    'Acceptance scenarios',
+  ])
+    assert.ok(protocol.includes(`## ${heading}`), heading);
   for (const field of [
-    'Task ID', 'Acceptance criteria', 'Scope and exclusions', 'Ownership', 'Dependencies',
-    'Context', 'Change-set ID', 'Verification', 'Status', 'Evidence', 'Findings', 'Limitations',
-  ]) assert.ok(protocol.includes(`**${field}**`), field);
-  for (const status of ['PASS', 'FAIL', 'BLOCKED', 'NOT_APPLICABLE', 'ACCEPTED_RISK']) assert.ok(protocol.includes(`\`${status}\``), status);
-  for (const gate of ['Riot compliance gate', 'AI analysis gate', 'Rust gate', 'DESIGN_REVIEW']) assert.ok(protocol.includes(gate), gate);
+    'Task ID',
+    'Acceptance criteria',
+    'Scope and exclusions',
+    'Ownership',
+    'Dependencies',
+    'Context',
+    'Change-set ID',
+    'Verification',
+    'Status',
+    'Evidence',
+    'Findings',
+    'Limitations',
+  ])
+    assert.ok(protocol.includes(`**${field}**`), field);
+  for (const status of ['PASS', 'FAIL', 'BLOCKED', 'NOT_APPLICABLE', 'ACCEPTED_RISK'])
+    assert.ok(protocol.includes(`\`${status}\``), status);
+  for (const gate of ['Riot compliance gate', 'AI analysis gate', 'Rust gate', 'DESIGN_REVIEW'])
+    assert.ok(protocol.includes(gate), gate);
 });
 
 test('protocol includes risk precedence, review independence, and stale-evidence safeguards', () => {
   const protocol = read(orchestrationPath);
   for (const requirement of [
-    'Risk overrides size.', 'Only the root agent spawns subagents.', 'At most three subagents',
-    'one writer per file', 'staged, unstaged, and untracked', 'fresh reviewer',
-    'configuration-only', 'CRITICAL/HIGH', 'explicit user acceptance',
-    'unavailable review is never a pass', 'invalidate', 'not a CI or branch-protection control',
+    'Risk overrides size.',
+    'Only the root agent spawns subagents.',
+    'At most three subagents',
+    'one writer per file',
+    'staged, unstaged, and untracked',
+    'fresh reviewer',
+    'configuration-only',
+    'CRITICAL/HIGH',
+    'explicit user acceptance',
+    'unavailable review is never a pass',
+    'invalidate',
+    'not a CI or branch-protection control',
     'Do not combine repository read tools and network tools',
-  ]) assert.ok(protocol.includes(requirement), requirement);
+  ])
+    assert.ok(protocol.includes(requirement), requirement);
 });
 
 test('session branch rule keeps commits off Develop/master with safe branch creation', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of [
-    'PascalCase topic branch', 'before the first mutating change', 'never stash, force, or clean',
-    'workers never create or switch branches', 'never directly on `Develop` or `master`', 'never pushes and never merges',
-  ]) assert.ok(core.includes(requirement), `core.md: ${requirement}`);
+    'PascalCase topic branch',
+    'before the first mutating change',
+    'never stash, force, or clean',
+    'workers never create or switch branches',
+    'never directly on `Develop` or `master`',
+    'never pushes and never merges',
+  ])
+    assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const agents = read('AGENTS.md');
   assert.ok(agents.includes('per-session topic branch'));
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
@@ -215,10 +329,18 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
 test('delegation hard gates persist in always-on rules and the protocol', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of [
-    'Delegation gates', 'figma-designer', 'document-mutating `figma_*` tools', 'never self-approved',
-    'riot-compliance-reviewer', 'ai-analysis-reviewer', 'rust-reviewer', 'first mutating tool call',
-    'never guess tool names or argument shapes', 'Patching a failed artifact does not make it compliant',
-  ]) assert.ok(core.includes(requirement), `core.md: ${requirement}`);
+    'Delegation gates',
+    'figma-designer',
+    'document-mutating `figma_*` tools',
+    'never self-approved',
+    'riot-compliance-reviewer',
+    'ai-analysis-reviewer',
+    'rust-reviewer',
+    'first mutating tool call',
+    'never guess tool names or argument shapes',
+    'Patching a failed artifact does not make it compliant',
+  ])
+    assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const protocol = read(orchestrationPath);
   for (const requirement of ['### Hard gates', 'non-negotiable', 'written spec', 'debug-only']) {
     assert.ok(protocol.includes(requirement), `orchestrate: ${requirement}`);
@@ -249,10 +371,20 @@ test('review profiles keep their independence and evidence requirements', () => 
 test('specialist profiles use the structured result contract', () => {
   for (const name of agentNames) {
     const profile = read(`.devin/agents/${name}.md`);
-    for (const heading of ['Task ID', 'Change-set ID', 'Status', 'Evidence', 'Findings', 'Blocking', 'Optional', 'Limitations']) {
+    for (const heading of [
+      'Task ID',
+      'Change-set ID',
+      'Status',
+      'Evidence',
+      'Findings',
+      'Blocking',
+      'Optional',
+      'Limitations',
+    ]) {
       assert.ok(profile.includes(`## ${heading}`) || profile.includes(`### ${heading}`), `${name}: ${heading}`);
     }
-    for (const field of ['Classification', 'Evidence', 'Impact', 'Recommended action']) assert.ok(profile.includes(field), `${name}: ${field}`);
+    for (const field of ['Classification', 'Evidence', 'Impact', 'Recommended action'])
+      assert.ok(profile.includes(field), `${name}: ${field}`);
   }
 });
 
@@ -272,21 +404,39 @@ test('figma bridge field notes stay pinned to the configured server version', ()
 test('design acceptance gate keeps Figma order, node IDs, and user-only acceptance', () => {
   const rule = read('.devin/rules/design-acceptance.md');
   assert.match(frontmatter('.devin/rules/design-acceptance.md'), /^trigger: always_on$/m);
-  for (const requirement of ['1:2', '0:1', 'l34FZ4ZhQpkOc172pkcjfs', 'Only the user accepts', 'docs/design/acceptance.md', 'Design system first', 'Implementation last']) {
+  for (const requirement of [
+    '1:2',
+    '0:1',
+    'l34FZ4ZhQpkOc172pkcjfs',
+    'Only the user accepts',
+    'docs/design/acceptance.md',
+    'Design system first',
+    'Implementation last',
+  ]) {
     assert.ok(rule.includes(requirement), requirement);
   }
   assert.ok(read('AGENTS.md').includes('.devin/rules/design-acceptance.md'));
   assert.ok(read('.devin/rules/core.md').includes('Agents never accept designs'));
   assert.ok(read('.devin/skills/orchestrate/SKILL.md').includes('Only the user accepts'));
   assert.ok(read('.devin/skills/add-frontend-feature/SKILL.md').includes('docs/design/acceptance.md'));
-  assert.ok(read('.devin/skills/feature/SKILL.md').includes('docs/design/acceptance.md') || read('.devin/skills/feature/SKILL.md').includes('design-acceptance.md'));
+  assert.ok(
+    read('.devin/skills/feature/SKILL.md').includes('docs/design/acceptance.md') ||
+      read('.devin/skills/feature/SKILL.md').includes('design-acceptance.md'),
+  );
   assert.match(read('.devin/agents/figma-designer.md'), /Never mark a design as accepted/);
 });
 
 test('telemetry hook is one cross-platform Node command that records metadata only', () => {
   const hooks = json('.devin/hooks.v1.json');
   const expected = 'node "${DEVIN_PROJECT_DIR:-.}/.devin/scripts/telemetry-hook.mjs" || true';
-  for (const event of ['PreToolUse', 'PostToolUse', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'PostCompaction']) {
+  for (const event of [
+    'PreToolUse',
+    'PostToolUse',
+    'UserPromptSubmit',
+    'SessionStart',
+    'SessionEnd',
+    'PostCompaction',
+  ]) {
     assert.equal(hooks[event]?.[0]?.hooks?.[0]?.command, expected, event);
   }
   const script = read('.devin/scripts/telemetry-hook.mjs');

@@ -31,6 +31,8 @@ Run from the repository root. All TypeScript units use Vitest and exit after one
 - Rust units (not scaffolded yet — `services/rofl-parser`, `apps/desktop/src-tauri`): `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --manifest-path <crate>/Cargo.toml` when the crates exist.
 - Desktop bundle (only when packaging is in scope and `apps/desktop` exists): `pnpm -C apps/desktop run tauri build`.
 
+Lint and format (root, whole repo): `pnpm lint` (ESLint, `eslint.config.mjs`) and `pnpm format:check` (Prettier); fix with `pnpm format`. CI enforces both on task branches and PRs.
+
 Compose checks: `docker compose config --quiet` and `docker compose -f docker-compose.backend.yml config --quiet` for static validation; `docker compose up -d` then curl `http://localhost:3000/health` and `http://localhost:4200/` then `docker compose down` for the live check. Do not run compose alongside the local dev servers — ports 3000, 4200, and 5432 overlap.
 
 On Windows PowerShell, use `npm.cmd`/`pnpm.cmd` if execution policy blocks the `.ps1` shims; do not change execution policy.

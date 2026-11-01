@@ -2,12 +2,12 @@
 description: CSS/SCSS styling rules
 trigger: glob
 globs:
-  - "apps/web/**/*.scss"
-  - "apps/web/**/*.css"
-  - "apps/desktop/src/**/*.scss"
-  - "apps/desktop/src/**/*.css"
-  - "packages/ui/**/*.scss"
-  - "packages/ui/**/*.css"
+  - 'apps/web/**/*.scss'
+  - 'apps/web/**/*.css'
+  - 'apps/desktop/src/**/*.scss'
+  - 'apps/desktop/src/**/*.css'
+  - 'packages/ui/**/*.scss'
+  - 'packages/ui/**/*.css'
 ---
 
 # CSS Rules
