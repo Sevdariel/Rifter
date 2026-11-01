@@ -208,6 +208,8 @@ test('delegation hard gates persist in always-on rules and the protocol', () => 
   for (const requirement of ['### Hard gates', 'non-negotiable', 'written spec', 'debug-only']) {
     assert.ok(protocol.includes(requirement), `orchestrate: ${requirement}`);
   }
+  assert.ok(core.includes('standard code review'), 'core.md: narrowed .devin/ gate exemption');
+  assert.ok(protocol.includes('standard independent code review'), 'orchestrate: narrowed .devin/ gate exemption');
 });
 
 test('review profiles keep their independence and evidence requirements', () => {

@@ -6,7 +6,7 @@ Rifter analyzes a player's League of Legends games with AI coaching. It captures
 
 - **Desktop app:** Tauri (Rust backend + Angular UI), Windows and macOS. Live capture from the Live Client Data API (`https://127.0.0.1:2999`), LCU gameflow watch, automatic `.rofl` download, upload queue, replay seek.
 - **Web app:** Angular SPA. The same match analysis and data as the desktop app, plus a 2D fragment player for moments flagged by the AI.
-- **Backend:** NestJS API. Holds the Riot API key and LLM keys, Riot Sign-On (RSO) auth, Match-V5 fetch, `.rofl` storage (S3-compatible), clip slicer, persistence.
+- **Backend:** NestJS API. Holds the Riot API key, Riot Sign-On (RSO) auth, Match-V5 fetch, `.rofl` storage (S3-compatible), clip slicer, persistence. Manages the local Ollama LLM process on the player's machine over HTTP (detect/attach, model pull, load/unload; spawn only when the API itself runs on the host).
 - **ROFL parser service:** Rust service that parses `.rofl` replay files into timestamped positions, wards, and events.
 - **Shared analysis library:** TypeScript package with deterministic metrics, moment detection, LLM prompt building, and the analysis report contract. Used by desktop, web, and backend.
 - **Shared UI library:** Angular components shared by desktop and web (report views, 2D replay player, data-tier badges).
@@ -21,6 +21,7 @@ The repository is being bootstrapped. Planned layout (verify on disk before rely
 | `services/rofl-parser/` | Rust `.rofl` parser service |
 | `packages/analysis/` | Shared TypeScript analysis library |
 | `packages/ui/` | Shared Angular component library |
+| `packages/design-tokens/` | Design tokens generated from Figma Variables (`tokens.css`, `tokens.ts`) |
 
 Package manifests, lockfiles, `Cargo.toml`, and project files are the source of truth for installed versions and tooling; verify them before applying version-specific guidance.
 
@@ -39,11 +40,14 @@ Apply this target architecture to new and directly changed code within the reque
 
 - **Target platforms:** the product is developed and released for Windows and macOS. Live capture (LCU, Live Client Data) and the desktop app must work on both. Linux is not a target because League of Legends does not run there. Platform-specific code (lockfile and replay paths, keychain, file watching) has an implementation per OS and tests for both branches. Tooling and scripts (hooks, scripts, CI steps) must run unchanged on both systems, so prefer Node.js or another tool the project already requires over shell-specific or single-OS commands.
 - **Data tiers:** every match has a tier. `basic` = Match-V5 only (positions every 60 s). `full` = parsed `.rofl` available (positions every 1 s, wards). The UI always shows the tier. The web app defaults to `basic` until the desktop app syncs the replay.
-- **Analysis pipeline:** deterministic metrics first (code), then moment detection from the timeline (code), then the LLM receives curated facts and returns a report with `moments[]` (`t_start`, `t_end`, `label`, `mistake`, `fix`). The LLM never receives raw dumps and never invents timestamps that are not anchored to timeline events.
-- **Secrets:** Riot API keys and LLM API keys exist only on the backend or in the user's local OS keychain for desktop. Never in web bundles, never in the repository.
+- **Analysis pipeline:** deterministic metrics first (code), then moment detection from the timeline (code), then the LLM receives curated facts and returns a report with `moments[]` (`t_start`, `t_end`, `label`, `mistake`, `fix`). The LLM never receives raw dumps and never invents timestamps that are not anchored to timeline events. The LLM runs locally via Ollama on the player's machine — loaded after game end and unloaded after the report; the model is selected adaptively by free VRAM and pinned by digest, and swapping it is a config change. Report output is schema-constrained and validated with retry.
+- **Secrets:** Riot API keys exist only on the backend (env files, never committed); the LLM is local, so there is no LLM API key to protect. Desktop user-scoped secrets live in the OS keychain. Never in web bundles, never in the repository.
 - **Shared code first:** analysis logic lives in `packages/analysis`, shared views in `packages/ui`. Apps contain wiring, platform integration, and app-specific views only.
 - **Frontend:** feature-first. Each feature lives under `src/app/<feature>/` with its own components, services, models, and tests.
 - **Backend:** NestJS modules by domain (for example `auth`, `matches`, `replays`, `analysis`, `clips`). Each module owns its controllers, services, DTOs, and tests.
+- **Tooling:** pnpm workspaces managed by corepack; Node pinned in `.nvmrc`. Local development runs through docker-compose — a full profile (db + api + web) and a backend-only profile (db + api) for frontend work. Postgres holds the match cache, reports, and `analysis_jobs` (pipeline observability: status, prompt version, model digest, timings, failures). Ollama and the desktop app run on the host for GPU access.
+- **Design system:** Figma Variables are the source of truth for design tokens, synced into `packages/design-tokens` via the Figma bridge. UI components are custom — no component library. A new element gets documented usage rules before implementation, then the design-acceptance gate applies.
+- **Observability:** structured pino logging, `/health` endpoints, Sentry (API + web), and per-match `analysis_jobs` records are the debugging backbone; Riot API calls and 429/`Retry-After` events are counted.
 
 ## Development Principles
 
@@ -53,6 +57,7 @@ Apply this target architecture to new and directly changed code within the reque
 4. **Minimal, correct changes.** Prefer the smallest fix that addresses the root cause. Avoid over-engineering. Report unrelated or pre-existing failures instead of fixing them automatically. Consume platform primitives before wrapping them.
 5. **Commits.** Commit completed changes locally after verification; never push on the user's behalf. One scope per commit — pure moves/renames go in a separate commit. Review the staged diff for secrets and unrelated user changes before committing. Work happens on a per-session topic branch created from `Develop` (see `.devin/rules/core.md`); never commit directly to `Develop` or `master`.
 6. **Language.** All instructions, code, comments, file names, and documentation are in English. User-facing UI copy follows the product's localization decisions.
+7. **README.** `README.md` stays current — product pitch, architecture overview, repository map, quickstart, requirements, and links into `docs/`. Update it with every structural, command, or requirement change.
 
 ## Verification
 
@@ -65,7 +70,7 @@ Apply this target architecture to new and directly changed code within the reque
 - Only the root agent delegates and integrates. Give workers explicit context and disjoint write ownership; preserve unrelated user changes. Reviewers must be independent of the implementation and design they review.
 - Figma document writes are exclusive to the `figma-designer` profile; the root does not mutate Figma documents directly. Visual output requires independent review against reference evidence (see delegation gates in `.devin/rules/core.md`).
 - Design acceptance gate: UI implementation starts only after the user has accepted the design in Figma. Design-system components (Figma page `1:2`) come first and are accepted before views (Figma page `0:1`) are designed, and views are accepted before they are implemented. Only the user accepts; agents never do. Follow `.devin/rules/design-acceptance.md`.
-- Behavior-changing code and executable/configuration changes require independent review. Security-sensitive changes, including agent/MCP/permission configuration, require the protocol's independent security gate regardless of size. Riot data-collection, live-capture, and AI-output changes require the Riot compliance gate. LLM prompt, model, or report-contract changes require the AI analysis gate. Rust changes require the Rust review gate. Missing required review is a blocker, not a pass.
+- Behavior-changing code and executable/configuration changes require independent review. Security-sensitive changes — including `.devin/` execution configuration such as agent permissions/allowed-tools, MCP servers, hooks, and triggers — require the protocol's independent security gate regardless of size; pure rules/skills/profile prose that changes no execution surface needs only the standard code review. Riot data-collection, live-capture, and AI-output changes require the Riot compliance gate. LLM prompt, model, or report-contract changes require the AI analysis gate. Rust changes require the Rust review gate. Missing required review is a blocker, not a pass.
 - Subagent delegation under this protocol is pre-authorized. The root decides when reviewers, verifiers, or investigators are required and launches them via `run_subagent` without asking for confirmation. Do not substitute self-review for a required independent gate.
 - Apply project rules and installed-version constraints to every worker. Third-party skills and reference examples do not authorize dependency/tooling migrations or override these rules. Keep command definitions in `run-tests`, not in agent profiles.
 

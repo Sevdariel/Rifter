@@ -25,6 +25,9 @@ target/
 # Replay files and captures (personal game data)
 *.rofl
 captures/
+# Test fixtures are the exception: committed regression evidence
+!**/fixtures/**/*.rofl
+!**/fixtures/captures/
 
 # Editors and OS
 .vscode/*

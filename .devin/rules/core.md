@@ -26,6 +26,7 @@ trigger: always_on
 - Rust changes go through the independent `rust-reviewer` gate in addition to the code review.
 - Before the first mutating tool call in a domain covered by a specialist profile in `.devin/skills/orchestrate/SKILL.md`, name the owning specialist. Retrofitting ownership after manual edits does not satisfy the gate.
 - Before the first call to any MCP server, list its tools once and use actual schemas; never guess tool names or argument shapes. For `figma-mcp-bridge`, consult `.devin/references/figma-mcp-bridge.md` first.
+- `.devin/` changes that alter agent execution — agent `allowed-tools`/permissions, MCP server configuration, hooks, triggers, or other executable configuration — are security-sensitive and require the `security-reviewer` gate regardless of size. Pure prose changes to rules, skills, or profile descriptions need only the standard code review.
 - If a specialist-owned deliverable is rejected on fidelity or evidence grounds, stop manual patching and rerun the evidence pipeline (references -> spec -> build -> independent review). Patching a failed artifact does not make it compliant.
 
 ## Scripted edit safety

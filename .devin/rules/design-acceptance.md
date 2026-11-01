@@ -47,4 +47,5 @@ If any check fails, stop and ask the user. Do not implement from an unaccepted o
 ## Scope
 
 - This gate covers UI design and implementation (`apps/web`, `apps/desktop`, `packages/ui`). It does not block backend, analysis, or Rust work that has no UI.
+- Explicitly marked dev-only harness or debug views (for example the pre-design report dev-harness in `apps/web`) are exempt; a dev-harness promoted to product UI loses the exemption and then needs an accepted design.
 - The 2D replay player, live-capture overlays, and any view showing game data also pass the Riot compliance rules in `riot-compliance.md`. Acceptance in Figma does not waive that gate.
