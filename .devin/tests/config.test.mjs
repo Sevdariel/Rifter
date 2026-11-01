@@ -10,7 +10,7 @@ const json = (path) => JSON.parse(read(path));
 
 const skillNames = [
   'add-analysis-feature', 'add-backend-feature', 'add-desktop-feature', 'add-frontend-feature', 'bugfix',
-  'capture-refs', 'deploy', 'feature', 'orchestrate', 'refactor-slice', 'run-tests', 'session-retro',
+  'capture-refs', 'deploy', 'feature', 'github', 'orchestrate', 'refactor-slice', 'run-tests', 'session-retro',
 ];
 const implementationSkills = ['add-analysis-feature', 'add-backend-feature', 'add-desktop-feature', 'add-frontend-feature', 'bugfix', 'feature', 'refactor-slice'];
 const agentNames = [

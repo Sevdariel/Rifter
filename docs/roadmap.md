@@ -14,7 +14,7 @@ Pipeline: Match-V5 → deterministic metrics → moment detection → local LLM 
 - **M1 `packages/analysis`** — report contract + schema, deterministic metrics, moment detection, versioned prompt building, Ollama HTTP client (schema `format`, `keep_alive: 0`), free-VRAM detection + model tier map, golden tests on committed Match-V5 fixtures (queues: solo/duo, flex, normal — no ARAM).
 - **M2 `apps/api`** — `matches` (fetch + cache), `analysis` (pipeline run + Ollama lifecycle: detect/attach over HTTP — spawn only when the api runs on host — lazy load post-game, unload), `reports`, `analysis_jobs` observability table, pino logging, `/health`, Sentry, Riot key via env (never committed).
 - **M3 `apps/web` dev-harness** — dev-only report viewer and routing shell. Not product UI; exempt from the design gate.
-- **M4 Design start** — Figma design system page (Variables for tokens, custom components), token sync pipeline (bridge → `packages/design-tokens` codegen), first view designs → user acceptance → UI implementation.
+- **M4 Design system + first views** — Figma design system page (Variables for tokens, custom components), token sync pipeline (bridge → `packages/design-tokens` codegen), first view designs → user acceptance → UI implementation.
 
 ## Post-MVP backlog
 
