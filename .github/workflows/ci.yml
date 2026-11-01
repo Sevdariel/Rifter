@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [Develop, master]
+    branches: ['**']
   pull_request:
     branches: [Develop, master]
 
@@ -57,3 +57,41 @@ jobs:
         run: |
           docker compose config --quiet
           docker compose -f docker-compose.backend.yml config --quiet
+
+  # Lint and format checks run on task branches (and PRs), not on direct
+  # pushes to Develop/master — those were already verified on their PRs.
+  lint:
+    if: github.event_name == 'pull_request' || (github.ref_name != 'Develop' && github.ref_name != 'master')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install pnpm
+        run: npm install -g pnpm@12.15.0
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Prettier check
+        run: pnpm format:check
