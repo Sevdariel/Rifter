@@ -12,7 +12,7 @@ Pipeline: Match-V5 → deterministic metrics → moment detection → local LLM 
 
 - **M0 Repository scaffold** — pnpm workspaces (corepack, Node per `.nvmrc`), `apps/api`, `apps/web`, `packages/analysis`, `packages/ui`, `packages/design-tokens`, docker-compose (full: db + api + web; backend-only: db + api), Postgres + migrations, `run-tests` commands, GitHub Issues backlog seed.
 - **M1 `packages/analysis`** — report contract + schema, deterministic metrics, moment detection, versioned prompt building, Ollama HTTP client (schema `format`, `keep_alive: 0`), free-VRAM detection + model tier map, golden tests on committed Match-V5 fixtures (queues: solo/duo, flex, normal — no ARAM).
-- **M2 `apps/api`** — `matches` (fetch + cache), `analysis` (pipeline run + Ollama lifecycle: spawn/detect, lazy load post-game, unload), `reports`, `analysis_jobs` observability table, pino logging, `/health`, Sentry, Riot key via env (never committed).
+- **M2 `apps/api`** — `matches` (fetch + cache), `analysis` (pipeline run + Ollama lifecycle: detect/attach over HTTP — spawn only when the api runs on host — lazy load post-game, unload), `reports`, `analysis_jobs` observability table, pino logging, `/health`, Sentry, Riot key via env (never committed).
 - **M3 `apps/web` dev-harness** — dev-only report viewer and routing shell. Not product UI; exempt from the design gate.
 - **M4 Design start** — Figma design system page (Variables for tokens, custom components), token sync pipeline (bridge → `packages/design-tokens` codegen), first view designs → user acceptance → UI implementation.
 

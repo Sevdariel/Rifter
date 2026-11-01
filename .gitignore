@@ -26,7 +26,8 @@ target/
 *.rofl
 captures/
 # Test fixtures are the exception: committed regression evidence
-!**/fixtures/**
+!**/fixtures/**/*.rofl
+!**/fixtures/captures/
 
 # Editors and OS
 .vscode/*
