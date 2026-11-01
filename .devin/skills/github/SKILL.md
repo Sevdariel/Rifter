@@ -65,6 +65,17 @@ gh api repos/Sevdariel/Rifter/issues/<N> -q '.sub_issues_summary'
 
 Bulk seeding: drive `gh` from a Node script (`execFileSync`, manifest array of epics+tasks, same calls as above). Put such scripts in gitignored `.devin/tmp/` and remove them after the run.
 
+## Board status flow
+
+- `Todo` → `In Progress` when a session starts the task.
+- `Code review` when the change is committed on the session branch. It means waiting for the user's acceptance — merging to `Develop` is the user's call, and the item stays in `Code review` until then.
+- `Done` after the merge to `Develop` is verified on the remote: the agent sets `Done` and closes the issue with a completion comment (commit + merge ref).
+- `Closed` once the change lands on `master` (release merge). The agent sets `Closed` after verifying the commit is on `origin/master`.
+
+```bash
+gh project item-edit 1 --owner Sevdariel --url https://github.com/Sevdariel/Rifter/issues/<N> --field Status --value "<Todo|In Progress|Code review|Done|Closed>"
+```
+
 ## Boundaries
 
 - Never print, paste, or commit tokens (`gh auth token` output is off-limits for logs, issues, files, and chat).

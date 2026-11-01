@@ -21,15 +21,19 @@ Run commands from the repository root. Use the installed toolchains and project-
 
 ## Application suites
 
-The application is not scaffolded yet. When the workspace tooling is created, replace this section with the exact build, lint, and test commands for each unit (`apps/desktop`, `apps/web`, `apps/api`, `packages/analysis`, `packages/ui`, `services/rofl-parser`) and update `.devin/tests/config.test.mjs` to assert them. Until then, report application verification as `BLOCKED: not scaffolded`.
+Run from the repository root. All TypeScript units use Vitest and exit after one run. Workspace-wide: `pnpm -r test` and `pnpm -r build` (five projects).
 
-Planned command shapes (confirm against the real manifests before use):
+- `apps/api` (`@rifter/api`): `pnpm -C apps/api test` (`vitest run`), `pnpm -C apps/api build` (`nest build`). Dev server: `pnpm -C apps/api start:dev` on :3000.
+- `apps/web` (`@rifter/web`): `pnpm -C apps/web test` (`ng test` via `@angular/build:unit-test`, Vitest), `pnpm -C apps/web build` (`ng build` → `dist/web`). Dev server: `pnpm -C apps/web start` on :4200.
+- `packages/analysis` (`@rifter/analysis`): `pnpm -C packages/analysis test` (`vitest run`), `pnpm -C packages/analysis build` (tsc → `dist/`).
+- `packages/design-tokens` (`@rifter/design-tokens`): `pnpm -C packages/design-tokens test` (`vitest run`), `pnpm -C packages/design-tokens build` (tsc → `dist/`).
+- `packages/ui` (`@rifter/ui`): `pnpm -C packages/ui test` (`ng test` via `@angular/build:unit-test`, Vitest), `pnpm -C packages/ui build` (`ng build` → ng-packagr `dist/`).
+- Rust units (not scaffolded yet — `services/rofl-parser`, `apps/desktop/src-tauri`): `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --manifest-path <crate>/Cargo.toml` when the crates exist.
+- Desktop bundle (only when packaging is in scope and `apps/desktop` exists): `pnpm -C apps/desktop run tauri build`.
 
-- TypeScript units: `npm --prefix <unit> run build` and `npm --prefix <unit> test -- --watch=false` (Vitest).
-- Rust units: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` with `--manifest-path <crate>/Cargo.toml`.
-- Desktop bundle (only when packaging is in scope): `npm --prefix apps/desktop run tauri build`.
+Compose checks: `docker compose config --quiet` and `docker compose -f docker-compose.backend.yml config --quiet` for static validation; `docker compose up -d` then curl `http://localhost:3000/health` and `http://localhost:4200/` then `docker compose down` for the live check. Do not run compose alongside the local dev servers — ports 3000, 4200, and 5432 overlap.
 
-On Windows PowerShell, use `npm.cmd` if execution policy blocks `npm.ps1`; do not change execution policy.
+On Windows PowerShell, use `npm.cmd`/`pnpm.cmd` if execution policy blocks the `.ps1` shims; do not change execution policy.
 
 ## Agent Configuration
 

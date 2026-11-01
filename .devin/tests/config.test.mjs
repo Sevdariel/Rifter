@@ -98,6 +98,21 @@ test('root instructions reference the canonical verification skill and context f
   assert.ok(read('.devin/skills/run-tests/SKILL.md').includes('node --test .devin/tests/config.test.mjs'));
 });
 
+test('run-tests skill lists the real workspace commands', () => {
+  const skill = read('.devin/skills/run-tests/SKILL.md');
+  const units = ['apps/api', 'apps/web', 'packages/analysis', 'packages/design-tokens', 'packages/ui'];
+  for (const dir of units) {
+    const manifest = json(`${dir}/package.json`);
+    for (const script of ['test', 'build']) {
+      assert.ok(manifest.scripts?.[script], `${dir} missing script: ${script}`);
+      assert.ok(skill.includes(`pnpm -C ${dir} ${script}`), `run-tests missing: pnpm -C ${dir} ${script}`);
+    }
+  }
+  for (const command of ['pnpm -r test', 'pnpm -r build', 'docker compose config --quiet', 'docker compose -f docker-compose.backend.yml config --quiet', 'node --test .devin/tests/config.test.mjs']) {
+    assert.ok(skill.includes(command), `run-tests missing: ${command}`);
+  }
+});
+
 test('specialist profiles have unique names, swe-2-max model, and least-privilege tools', () => {
   const files = readdirSync(resolve(root, '.devin/agents')).sort();
   assert.deepEqual(files, agentNames.map((name) => `${name}.md`));
