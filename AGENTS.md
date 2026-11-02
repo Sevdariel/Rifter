@@ -55,7 +55,7 @@ Apply this target architecture to new and directly changed code within the reque
 2. **Version-appropriate best practices.** Prefer stable APIs supported by the installed versions. Dependency upgrades and tooling migrations require explicit user approval. Prefer dependency versions published at least 7 days ago.
 3. **Tests are mandatory.** Add or update automated tests for new or changed behavior: Vitest for TypeScript (Angular, NestJS, shared packages), `cargo test` for Rust. If tooling blocks this, report the blocker and ask before migrating tooling.
 4. **Minimal, correct changes.** Prefer the smallest fix that addresses the root cause. Avoid over-engineering. Report unrelated or pre-existing failures instead of fixing them automatically. Consume platform primitives before wrapping them.
-5. **Commits.** Commit completed changes locally after verification; never push on the user's behalf. One scope per commit — pure moves/renames go in a separate commit. Review the staged diff for secrets and unrelated user changes before committing. Work happens on a per-session topic branch created from `Develop` (see `.devin/rules/core.md`); never commit directly to `Develop` or `master`.
+5. **Commits.** Commit completed changes locally after verification; never push on the user's behalf. One scope per commit — pure moves/renames go in a separate commit. Review the staged diff for secrets and unrelated user changes before committing. Work happens on a per-session topic branch created from `Develop` (see `.devin/rules/core.md`); never commit directly to `Develop` or `master`. Message format: `type: subject` in English, body with `#<issue>` and the full issue URL (`https://github.com/Sevdariel/Rifter/issues/<N>`). No generation/AI attribution trailers.
 6. **Language.** All instructions, code, comments, file names, and documentation are in English. User-facing UI copy follows the product's localization decisions.
 7. **README.** `README.md` stays current — product pitch, architecture overview, repository map, quickstart, requirements, and links into `docs/`. Update it with every structural, command, or requirement change.
 
@@ -97,3 +97,4 @@ Always consult these files before making changes:
 - `.devin/rules/desktop.md` for Tauri/Rust desktop work
 - `.devin/rules/rust.md` for any Rust code (desktop crate, ROFL parser)
 - `.devin/rules/analysis.md` for the shared analysis library and LLM integration
+- `.devin/references/env-windows.md` on Windows environments — toolchain quirks (gh/npm paths, no corepack, Docker, pnpm approvals) and output discipline

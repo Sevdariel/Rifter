@@ -35,7 +35,7 @@ Lint and format (root, whole repo): `pnpm lint` (ESLint, `eslint.config.mjs`) an
 
 Compose checks: `docker compose config --quiet` and `docker compose -f docker-compose.backend.yml config --quiet` for static validation; `docker compose up -d` then curl `http://localhost:3000/health` and `http://localhost:4200/` then `docker compose down` for the live check. Do not run compose alongside the local dev servers — ports 3000, 4200, and 5432 overlap.
 
-On Windows PowerShell, use `npm.cmd`/`pnpm.cmd` if execution policy blocks the `.ps1` shims; do not change execution policy.
+On Windows PowerShell, use `npm.cmd`/`pnpm.cmd` if execution policy blocks the `.ps1` shims; do not change execution policy. Environment quirks and output discipline: `.devin/references/env-windows.md`.
 
 ## Agent Configuration
 

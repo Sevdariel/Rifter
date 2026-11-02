@@ -20,5 +20,6 @@ Delegated: follow the assigned API contract and file ownership. Do not delegate 
 4. Background work (replay parsing, LLM analysis) runs as idempotent jobs; endpoints return a job status instead of blocking.
 5. Register the module in the application root through its assigned owner. If a shared integration file belongs to another worker or the root, hand off the change instead of editing it concurrently.
 6. Uploads, auth, secrets, and external integrations are security-sensitive: tell the root so it schedules the security gate.
-7. Use `run-tests` for assigned focused backend checks. The root arranges independent code review, applicable gates, and final verification.
-8. Summarize the changes and verification results, then commit locally per the commit policy (never push).
+7. Docker/compose authoring follows `.devin/references/env-windows.md` — `**/.env*` dockerignore patterns with decoy verification, `"files": ["dist"]` for `pnpm deploy`, `USER node`, no corepack in `node:26` images, postgres 18+ volume at `/var/lib/postgresql`, zod-validated env keys omitted rather than empty.
+8. Use `run-tests` for assigned focused backend checks. The root arranges independent code review, applicable gates, and final verification.
+9. Summarize the changes and verification results, then commit locally per the commit policy (never push).
