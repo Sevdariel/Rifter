@@ -326,6 +326,17 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
 });
 
+test('session handover keeps the store read-only and handover files uncommitted', () => {
+  const skill = read('.devin/skills/session-handover/SKILL.md');
+  for (const requirement of ['session-handover.mjs', 'Never commit', 'read-only', 'main-chain'])
+    assert.ok(skill.includes(requirement), `skill: ${requirement}`);
+  const script = read('.devin/scripts/session-handover.mjs');
+  assert.ok(script.includes('readOnly: true'), 'script opens the store read-only');
+  const core = read('.devin/rules/core.md');
+  assert.ok(core.includes('session-handover'), 'core.md references the handover skill');
+  assert.ok(core.includes('Never commit handover files'), 'core.md: no-commit rule for handover files');
+});
+
 test('delegation hard gates persist in always-on rules and the protocol', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of [

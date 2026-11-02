@@ -15,6 +15,7 @@ trigger: always_on
 - In reviews and analyses, blocking findings require cited file/line evidence; claims about external library, Riot API, or runtime behavior additionally require library source/documentation or executed-check evidence — otherwise report them as unverified hypotheses, not blockers.
 - Assess task size and risk even without a slash command. For implementation, configuration changes, or nontrivial delegated work, use `.devin/skills/orchestrate/SKILL.md` once in the root agent; reuse an active context. Workers follow only their assigned contract and return results without starting another pipeline.
 - Never commit, log, or paste Riot API keys, LLM API keys, RSO client secrets, LCU lockfile passwords, or personal access tokens. When a secret appears in tool output, stop, tell the user, and recommend rotation.
+- Moving a session between machines uses `.devin/skills/session-handover/` (export via `.devin/scripts/session-handover.mjs` into the gitignored `.devin/tmp/`). Never commit handover files — transcripts can contain sensitive session content.
 
 ## Delegation gates (hard rules)
 

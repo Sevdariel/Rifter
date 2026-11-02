@@ -76,7 +76,7 @@ Apply this target architecture to new and directly changed code within the reque
 
 ## Agent tooling
 
-- Project workflows are skills under `.devin/skills/`: `feature`, `bugfix`, `refactor-slice`, the layer procedures (`add-frontend-feature`, `add-backend-feature`, `add-desktop-feature`, `add-analysis-feature`), `github` for GitHub issue/project operations, and user-only `deploy`. Files under `.devin/workflows/` are compatibility pointers.
+- Project workflows are skills under `.devin/skills/`: `feature`, `bugfix`, `refactor-slice`, the layer procedures (`add-frontend-feature`, `add-backend-feature`, `add-desktop-feature`, `add-analysis-feature`), `github` for GitHub issue/project operations, `session-handover` for moving local sessions between machines, and user-only `deploy`. Files under `.devin/workflows/` are compatibility pointers.
 - All custom agent profiles under `.devin/agents/` use the `swe-2-max` model.
 - Shared MCP servers are configured in `.devin/mcp_config.json`. Keep personal credentials out of shared configuration; personal tokens belong in the gitignored `.devin/mcp_config.local.json`.
 - Third-party skills under `.agents/skills/` are tracked in `skills-lock.json`. Apply repository rules and installed-version checks when using them.
