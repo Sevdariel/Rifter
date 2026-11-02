@@ -6,3 +6,6 @@ coverage
 pnpm-lock.yaml
 *.log
 ToDO
+# Agent-internal files are exempt from the product formatting gate
+.devin
+.agents
