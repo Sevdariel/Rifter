@@ -58,6 +58,7 @@ Apply this target architecture to new and directly changed code within the reque
 5. **Commits.** Commit completed changes locally after verification; never push on the user's behalf. One scope per commit — pure moves/renames go in a separate commit. Review the staged diff for secrets and unrelated user changes before committing. Work happens on a per-session topic branch created from `Develop` (see `.devin/rules/core.md`); never commit directly to `Develop` or `master`. Message format: `type: subject` in English, body with `#<issue>` and the full issue URL (`https://github.com/Sevdariel/Rifter/issues/<N>`); process/tooling changes without an issue reference the driving issue or omit the line. No generation/AI attribution trailers.
 6. **Language.** All instructions, code, comments, file names, and documentation are in English. User-facing UI copy follows the product's localization decisions.
 7. **README.** `README.md` stays current — product pitch, architecture overview, repository map, quickstart, requirements, and links into `docs/`. Update it with every structural, command, or requirement change.
+8. **Docs.** Each feature or area keeps a living doc at `docs/<feature-or-area>.md` — business purpose first, technical notes second. A feature or behavior change creates or updates its doc in the same change (see `.devin/rules/core.md`).
 
 ## Verification
 
