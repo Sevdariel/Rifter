@@ -13,7 +13,11 @@
 import { DatabaseSync } from 'node:sqlite';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const tmpDir = join(repoRoot, '.devin', 'tmp');
 
 function argValue(args, name) {
   const i = args.indexOf(name);
@@ -42,6 +46,17 @@ function openDb(dbPath) {
     console.error('Close Devin on this machine and retry — the store may be exclusively locked.');
     process.exit(2);
   }
+}
+
+function numFlag(args, name, fallback) {
+  const raw = argValue(args, name);
+  if (raw === undefined) return fallback;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0) {
+    console.error(`Invalid ${name} value: ${raw}`);
+    process.exit(2);
+  }
+  return n;
 }
 
 function iso(unixSeconds) {
@@ -80,7 +95,7 @@ const positional = rest.filter((a, i) => !a.startsWith('--') && !VALUE_FLAGS.has
 const dbPath = resolve(argValue(rest, '--db') || defaultDbPath());
 
 if (command === 'list') {
-  const limit = Number(argValue(rest, '--limit') || 20);
+  const limit = numFlag(rest, '--limit', 20);
   const db = openDb(dbPath);
   const rows = db
     .prepare(
@@ -106,7 +121,7 @@ if (command === 'export') {
     console.error('Usage: session-handover.mjs export <session-id> [--db PATH] [--out FILE] [--tool-chars N]');
     process.exit(2);
   }
-  const toolChars = Number(argValue(rest, '--tool-chars') || 300);
+  const toolChars = numFlag(rest, '--tool-chars', 300);
   const db = openDb(dbPath);
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
   if (!session) {
@@ -114,24 +129,35 @@ if (command === 'export') {
     console.error(`Session not found: ${sessionId}. Run "list" to see available sessions.`);
     process.exit(1);
   }
+  const safeId = sessionId.replace(/[^a-zA-Z0-9_-]/g, '');
   const allNodes = db
-    .prepare('SELECT node_id, parent_node_id, chat_message FROM message_nodes WHERE session_id = ?')
+    .prepare('SELECT row_id, node_id, parent_node_id, chat_message FROM message_nodes WHERE session_id = ? ORDER BY row_id')
     .all(sessionId);
   db.close();
 
   const byId = new Map(allNodes.map((n) => [n.node_id, n]));
   const nodes = [];
   if (session.main_chain_id != null && byId.has(session.main_chain_id)) {
-    for (let id = session.main_chain_id; id != null && byId.has(id); id = byId.get(id).parent_node_id)
+    const seen = new Set();
+    for (let id = session.main_chain_id; id != null && byId.has(id) && !seen.has(id); id = byId.get(id).parent_node_id) {
+      seen.add(id);
       nodes.push(byId.get(id));
+    }
     nodes.reverse();
   } else {
-    nodes.push(...allNodes.sort((a, b) => a.node_id - b.node_id));
+    nodes.push(...allNodes);
   }
 
   let summary = '';
-  const summaryPath = join(dirname(dbPath), 'summaries', `${sessionId}.md`);
-  if (existsSync(summaryPath)) summary = readFileSync(summaryPath, 'utf8').trim();
+  for (const candidate of [
+    join(dirname(dbPath), 'summaries', `${safeId}.md`),
+    join(dirname(dirname(dbPath)), 'summaries', `${safeId}.md`),
+  ]) {
+    if (existsSync(candidate)) {
+      summary = readFileSync(candidate, 'utf8').trim();
+      break;
+    }
+  }
 
   let workspaceDirs = '[]';
   try {
@@ -140,8 +166,10 @@ if (command === 'export') {
     workspaceDirs = session.workspace_dirs || '[]';
   }
 
-  const out =
-    argValue(rest, '--out') || resolve('.devin', 'tmp', `handover-${sessionId}.md`);
+  const customOut = argValue(rest, '--out');
+  const out = customOut ? resolve(customOut) : join(tmpDir, `handover-${safeId}.md`);
+  if (customOut && !(out + sep).startsWith(tmpDir + sep))
+    console.error(`warning: --out is outside the gitignored ${tmpDir} — do not commit this file.`);
 
   const lines = [];
   lines.push(`# Session handover: ${session.title || sessionId}`);
@@ -159,20 +187,13 @@ if (command === 'export') {
   lines.push('2. Fetch the repository and check out the branch this session was working on.');
   lines.push('3. Start a new Devin session in the repository and attach or paste this file as the first context — the agent continues from here.');
   lines.push('');
-  if (summary) {
-    lines.push('## Session summary');
-    lines.push('');
-    lines.push(summary);
-    lines.push('');
-  }
-  lines.push('## Transcript');
-  lines.push('');
-  lines.push(`_User and assistant messages in order; tool calls and results truncated to ${toolChars} chars. System prompts omitted._`);
-  for (const node of nodes) lines.push(renderMessage(node, toolChars));
-  lines.push('');
+  const summaryBlock = summary ? `## Session summary\n\n${summary}\n\n` : '';
+  const transcript =
+    `## Transcript\n\n_User and assistant messages in order; tool calls and results truncated to ${toolChars} chars. System prompts omitted._\n` +
+    nodes.map((node) => renderMessage(node, toolChars)).join('');
 
   mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, lines.join('\n').replace(/\n{3,}/g, '\n\n'));
+  writeFileSync(out, lines.join('\n').replace(/\n{3,}/g, '\n\n') + '\n' + summaryBlock + transcript, { mode: 0o600 });
   console.log(`Wrote ${out} (${nodes.length} main-chain message nodes).`);
   console.log('Move it to the other machine via a trusted channel — do not commit it.');
   process.exit(0);
