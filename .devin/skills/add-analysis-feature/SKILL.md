@@ -22,4 +22,4 @@ Delegated: follow the assigned contract and file ownership in `packages/analysis
 6. Report contract changes: bump the contract version, update the schema validator and every consumer (desktop, web, API, stored-report migration or compatibility read). Tell the root which apps are affected.
 7. Never call a live LLM or the live Riot API in tests; use recorded responses.
 8. Use `run-tests` for focused package checks. The root arranges code review, the AI analysis gate, and final verification.
-9. Summarize the changes, versions bumped, affected consumers, and verification results, then commit locally per the commit policy (push the branch once at task completion per `.devin/rules/core.md`).
+9. Summarize the changes, versions bumped, affected consumers, and verification results, then commit locally per the commit policy (never deploy; the branch is pushed once at task completion — see `.devin/rules/core.md`).

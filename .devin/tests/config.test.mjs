@@ -332,6 +332,7 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
   assert.ok(agents.includes('per-session topic branch'));
   assert.ok(agents.includes('`<type>-<issue-number>-<kebab-slug>`'));
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
+  assert.ok(read('.devin/skills/github/SKILL.md').includes('never per-commit'), 'github SKILL.md push boundary');
 });
 
 test('session handover keeps the store read-only and handover files uncommitted', () => {
@@ -351,6 +352,8 @@ test('documentation rule pins living per-feature docs', () => {
     assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const agents = read('AGENTS.md');
   assert.ok(agents.includes('docs/<feature-or-area>.md'), 'AGENTS.md docs principle');
+  for (const skill of ['feature', 'bugfix'])
+    assert.ok(read(`.devin/skills/${skill}/SKILL.md`).includes('living doc'), `${skill} SKILL.md docs reminder`);
 });
 
 test('delegation hard gates persist in always-on rules and the protocol', () => {

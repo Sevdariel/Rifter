@@ -24,4 +24,4 @@ Delegated: follow the assigned contract and file ownership. Do not delegate or c
 7. Add lazy routes only if the feature needs routes. Respect the single owner of shared routes, providers, and manifests.
 8. After adding or migrating template markup, run the view and compare a screenshot against the baseline.
 9. Use `run-tests` for assigned focused frontend checks. The root arranges independent code review, UX review where needed, applicable gates, and final verification.
-10. Summarize the changes and verification results, then commit locally per the commit policy (push the branch once at task completion per `.devin/rules/core.md`).
+10. Summarize the changes and verification results, then commit locally per the commit policy (never deploy; the branch is pushed once at task completion — see `.devin/rules/core.md`).
