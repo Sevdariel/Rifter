@@ -86,7 +86,7 @@ gh project item-edit 1 --owner Sevdariel --url https://github.com/Sevdariel/Rift
 ## Boundaries
 
 - Never print, paste, or commit tokens (`gh auth token` output is off-limits for logs, issues, files, and chat).
-- No push or merge on the user's behalf — the standing policy applies here too.
+- Pushing follows the session-branch policy in `.devin/rules/core.md` — remote created at branch creation, one push of the whole branch at task completion, never per-commit. Never push to `Develop`/`master` and never merge — merging is the user's call.
 - Run only the operations listed in this skill. Any other `gh`/MCP call — deletes, releases, repo settings, secrets, PR create/merge — requires explicit user instruction first.
 - Issues and comments are externally visible (the repo may be public): keep them factual, English, and free of secrets, keys, and personal game data.
 - Do not interpolate untrusted or external text into quoted `-t`/`-b` arguments; use `execFileSync`-style argv or `--body-file` for content that did not come from you.

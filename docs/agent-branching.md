@@ -18,8 +18,14 @@ Examples: `ci-50-github-actions-test-workflow` (issue #50 "CI: GitHub Actions te
 
 Sessions without a driving issue use a PascalCase topic name (e.g. `LiveCapture`). A continuation thread for the same task keeps the existing branch.
 
+## Pushing
+
+- The remote branch is created when the local branch is created: `git push -u origin <branch>`.
+- When the task completes, the whole branch is pushed once: `git push`. Commits are never pushed one at a time as they land.
+- The agent never merges — merging to `Develop` is the user's call, and nothing is pushed directly to `Develop` or `master`.
+
 ## Technical notes
 
 - Canonical rule: `.devin/rules/core.md` (session branch bullet). Mirrored in `AGENTS.md` §5 and `.devin/skills/github/SKILL.md`; pinned by `.devin/tests/config.test.mjs` (`session branch rule…` test).
-- Branch base: freshest `Develop` — `origin/Develop` after fetch, else local `Develop`. The agent never pushes and never merges; merging is the user's call.
+- Branch base: freshest `Develop` — `origin/Develop` after fetch, else local `Develop`.
 - Git ref names cannot contain `:` or spaces — the issue-style `feat-50: title` notation maps to the kebab slug above.
