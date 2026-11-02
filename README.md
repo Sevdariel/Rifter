@@ -45,6 +45,7 @@ Valid once the scaffold lands (M0). A Riot development API key goes in `apps/api
 - `docs/roadmap.md` — MVP plan, backlog, decisions
 - `AGENTS.md` — architecture, compliance boundary, agent rules
 - `docs/design/acceptance.md` — Figma design acceptance log
+- `docs/agent-branching.md` — session branch naming `<type>-<issue>-<slug>`
 - `.devin/rules/` — always-on and domain rules
 
 ## Legal
