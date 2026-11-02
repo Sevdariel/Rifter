@@ -330,6 +330,14 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
 });
 
+test('documentation rule pins living per-feature docs', () => {
+  const core = read('.devin/rules/core.md');
+  for (const requirement of ['docs/<feature-or-area>.md', 'business purpose', 'same change', 'review finding'])
+    assert.ok(core.includes(requirement), `core.md: ${requirement}`);
+  const agents = read('AGENTS.md');
+  assert.ok(agents.includes('docs/<feature-or-area>.md'), 'AGENTS.md docs principle');
+});
+
 test('delegation hard gates persist in always-on rules and the protocol', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of [
