@@ -23,7 +23,7 @@ The LLM runs locally via Ollama on the player's machine — loaded after the gam
 
 ## Requirements
 
-- Node.js (version pinned in `.nvmrc`), pnpm via corepack
+- Node.js (version pinned in `.nvmrc`), pnpm via `npm i -g pnpm@<pin>` (`packageManager` field carries the version; Node 26 has no corepack)
 - Docker Desktop (compose: Postgres + api + web)
 - Ollama installed on the host (managed automatically by the API)
 - Windows or macOS
