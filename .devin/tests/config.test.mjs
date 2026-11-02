@@ -313,7 +313,10 @@ test('protocol includes risk precedence, review independence, and stale-evidence
 test('session branch rule keeps commits off Develop/master with safe branch creation', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of [
-    'PascalCase topic branch',
+    '`<type>-<issue-number>-<kebab-slug>`',
+    'conventional-commit type matching the issue',
+    'driving GitHub issue',
+    'PascalCase topic name',
     'before the first mutating change',
     'never stash, force, or clean',
     'workers never create or switch branches',
@@ -323,6 +326,7 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
     assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const agents = read('AGENTS.md');
   assert.ok(agents.includes('per-session topic branch'));
+  assert.ok(agents.includes('`<type>-<issue-number>-<kebab-slug>`'));
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
 });
 

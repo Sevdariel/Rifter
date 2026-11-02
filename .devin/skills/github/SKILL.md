@@ -25,6 +25,7 @@ GitHub Issues + Projects are the task tracker for Rifter (`docs/roadmap.md` hold
 - New work item: create the issue with the right `-m "<milestone title>"`, attach it to the matching epic as a sub-issue, add it to the project board.
 - Issue bodies in English: scope + acceptance criteria. Titles imperative and short.
 - Commits and PRs may reference `#N`; GitHub links them automatically. `Fixes #N` in a commit message closes the issue — use deliberately, never by accident.
+- Branches for issue-driven work are named `<type>-<issue-number>-<kebab-slug>` after the driving issue (for example `ci-50-github-actions-test-workflow`) — see `.devin/rules/core.md` for the full session-branch rule.
 
 ## Cookbook
 
