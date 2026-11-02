@@ -22,4 +22,4 @@ Delegated: follow the assigned API contract and file ownership. Do not delegate 
 6. Uploads, auth, secrets, and external integrations are security-sensitive: tell the root so it schedules the security gate.
 7. Docker/compose authoring follows `.devin/references/env-windows.md` — `**/.env*` dockerignore patterns with decoy verification, `"files": ["dist"]` for `pnpm deploy`, `USER node`, no corepack in `node:26` images, postgres 18+ volume at `/var/lib/postgresql`, zod-validated env keys omitted rather than empty.
 8. Use `run-tests` for assigned focused backend checks. The root arranges independent code review, applicable gates, and final verification.
-9. Summarize the changes and verification results, then commit locally per the commit policy (never push).
+9. Summarize the changes and verification results, then commit locally per the commit policy (never deploy; the branch is pushed once at task completion — see `.devin/rules/core.md`).

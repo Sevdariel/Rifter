@@ -322,13 +322,17 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
     'never stash, force, or clean',
     'workers never create or switch branches',
     'never directly on `Develop` or `master`',
-    'never pushes and never merges',
+    'git push -u origin',
+    'pushes the whole branch once at task completion',
+    'never push commits individually',
+    'never merges',
   ])
     assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const agents = read('AGENTS.md');
   assert.ok(agents.includes('per-session topic branch'));
   assert.ok(agents.includes('`<type>-<issue-number>-<kebab-slug>`'));
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
+  assert.ok(read('.devin/skills/github/SKILL.md').includes('never per-commit'), 'github SKILL.md push boundary');
 });
 
 test('session handover keeps the store read-only and handover files uncommitted', () => {
@@ -340,12 +344,16 @@ test('session handover keeps the store read-only and handover files uncommitted'
   const core = read('.devin/rules/core.md');
   assert.ok(core.includes('session-handover'), 'core.md references the handover skill');
   assert.ok(core.includes('Never commit handover files'), 'core.md: no-commit rule for handover files');
+});
+
 test('documentation rule pins living per-feature docs', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of ['docs/<feature-or-area>.md', 'business purpose', 'same change', 'review finding'])
     assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const agents = read('AGENTS.md');
   assert.ok(agents.includes('docs/<feature-or-area>.md'), 'AGENTS.md docs principle');
+  for (const skill of ['feature', 'bugfix'])
+    assert.ok(read(`.devin/skills/${skill}/SKILL.md`).includes('living doc'), `${skill} SKILL.md docs reminder`);
 });
 
 test('delegation hard gates persist in always-on rules and the protocol', () => {

@@ -21,4 +21,4 @@ Delegated: follow the assigned Tauri command/event contract and file ownership. 
 5. If the feature needs a new Tauri capability, permission, plugin, or filesystem scope, keep it minimal and tell the root — it is security-sensitive.
 6. Implement the UI side through the bridge service and Vitest tests per `add-frontend-feature`.
 7. Use `run-tests` for focused Rust and UI checks (`cargo fmt`, `cargo clippy`, `cargo test`, Vitest). The root arranges code review, the Rust gate, and other applicable gates, plus final verification.
-8. Summarize the changes, platform coverage, and verification results, then commit locally per the commit policy (never push).
+8. Summarize the changes, platform coverage, and verification results, then commit locally per the commit policy (never deploy; the branch is pushed once at task completion — see `.devin/rules/core.md`).
