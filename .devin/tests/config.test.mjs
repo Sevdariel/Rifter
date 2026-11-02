@@ -21,6 +21,7 @@ const skillNames = [
   'orchestrate',
   'refactor-slice',
   'run-tests',
+  'session-handover',
   'session-retro',
 ];
 const implementationSkills = [
@@ -108,7 +109,7 @@ test('project skills have discoverable names, descriptions, and explicit trigger
     assert.match(header, /^description: \S.+$/m);
     assert.deepEqual(
       listField(header, 'triggers'),
-      ['deploy', 'session-retro'].includes(name) ? ['user'] : ['user', 'model'],
+      ['deploy', 'session-handover', 'session-retro'].includes(name) ? ['user'] : ['user', 'model'],
       name,
     );
   }
@@ -330,6 +331,15 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
 });
 
+test('session handover keeps the store read-only and handover files uncommitted', () => {
+  const skill = read('.devin/skills/session-handover/SKILL.md');
+  for (const requirement of ['session-handover.mjs', 'Never commit', 'read-only', 'main-chain'])
+    assert.ok(skill.includes(requirement), `skill: ${requirement}`);
+  const script = read('.devin/scripts/session-handover.mjs');
+  assert.ok(script.includes('readOnly: true'), 'script opens the store read-only');
+  const core = read('.devin/rules/core.md');
+  assert.ok(core.includes('session-handover'), 'core.md references the handover skill');
+  assert.ok(core.includes('Never commit handover files'), 'core.md: no-commit rule for handover files');
 test('documentation rule pins living per-feature docs', () => {
   const core = read('.devin/rules/core.md');
   for (const requirement of ['docs/<feature-or-area>.md', 'business purpose', 'same change', 'review finding'])
