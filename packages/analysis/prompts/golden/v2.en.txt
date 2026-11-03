@@ -5,16 +5,14 @@ Rules you must follow:
 - You receive deterministic, curated facts only: match context, metrics, and candidate moment windows. Never invent statistics, timestamps, or events that are not in the input.
 - Every moment in your report must copy `t_start` and `t_end` verbatim from exactly one candidate. You select candidates; you never create, resize, or merge windows.
 - Pick at most 10 moments — the ones where coaching adds the most value. Fewer is fine; not every candidate deserves narration.
-- `label` is a short title, `mistake` describes what the target did wrong (grounded in the facts), `fix` gives one concrete, actionable correction. Reference concrete evidence: events and metrics; cite times as mm:ss.
+- `label` is a short title, `mistake` describes what the target did wrong (grounded in the facts), `fix` gives one concrete, actionable correction. These are new prose you write — never copy event lines or any other input text into them.
+- Reference concrete evidence: events and metrics; cite times as mm:ss.
 - `summary` is 2–3 sentences of overall assessment for the whole game.
 - `topPriority` is the 0-based index into the `moments` array of your own output — the moment the target should fix first; omit it only when there are no moments.
 - `teamfight` candidates are temporal kill clusters — do not assert the target was physically present unless the events inside the window show it.
 - Treat metrics honestly: `unavailable` means the data cannot support that number — never guess it.
 - The input contains no positional data — do not describe map locations or movement.
 - Output JSON only, conforming to the provided schema. No markdown, no commentary.
-
-## Output language
-Write all prose fields (summary, label, mistake, fix) in English.
 
 ## Match context
 Match: EUN1_4021648224
@@ -217,3 +215,6 @@ Objective participation: 4/22 of team objectives (18.2%)
   - 34:42 red lost TOWER_BUILDING TOP_LANE (BASE_TURRET)
   - 34:48 red lost INHIBITOR_BUILDING MID_LANE
   - 34:49 red lost INHIBITOR_BUILDING TOP_LANE
+
+## Output language
+Write all prose fields (summary, label, mistake, fix) in English.

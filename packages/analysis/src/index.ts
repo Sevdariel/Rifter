@@ -71,6 +71,12 @@ export {
 } from './moment-detection.js';
 export type { MomentDetectionResult } from './moment-detection.js';
 
+export { ollamaGenerateJson, ollamaModelDigest, AnalysisError } from './ollama-client.js';
+export type { AnalysisStage, OllamaClientConfig, OllamaUsage, OllamaGenerateResult } from './ollama-client.js';
+
+export { analyzeMatch } from './analyze.js';
+export type { AnalyzeMatchDeps, AnalyzeMatchInput, AnalyzeTimings, AnalysisResult } from './analyze.js';
+
 export { buildPrompt, PROMPT_VERSION, MAX_PROMPT_CANDIDATES } from './prompt-builder.js';
 export type { BuildPromptInput, BuiltPrompt } from './prompt-builder.js';
 
