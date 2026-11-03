@@ -3,8 +3,28 @@
  * moment detection, LLM prompt building. Filled in by milestone M1.
  */
 
-/** Data tier of a match: Match-V5 only (`basic`) or parsed .rofl (`full`). */
-export type DataTier = 'basic' | 'full';
+export {
+  REPORT_CONTRACT_VERSION,
+  dataTierSchema,
+  reportLocaleSchema,
+  momentKindSchema,
+  momentCandidateSchema,
+  reportMomentSchema,
+  reportMetadataSchema,
+  llmOutputSchema,
+  analysisReportSchema,
+  llmOutputJsonSchema,
+} from './report-contract.js';
+export type {
+  DataTier,
+  ReportLocale,
+  MomentKind,
+  MomentCandidate,
+  ReportMoment,
+  ReportMetadata,
+  LlmOutput,
+  AnalysisReport,
+} from './report-contract.js';
 
-/** Version of the analysis report contract. Bump on breaking shape changes. */
-export const REPORT_CONTRACT_VERSION = 0;
+export { validateAnalysisReport } from './report-validation.js';
+export type { ReportValidationContext, ReportValidationResult } from './report-validation.js';
