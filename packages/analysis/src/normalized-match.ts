@@ -139,6 +139,29 @@ export const normalizedMatchSchema = z.object({
     .refine((f) => f.every((fr, i) => i === 0 || fr.timestampMs >= f[i - 1]!.timestampMs), {
       message: 'frames must be in ascending timestampMs order',
     }),
-  events: z.array(timelineEventSchema),
+  /** Ascending `event.timestampMs` order — enforced; detection relies on it. */
+  events: z
+    .array(timelineEventSchema)
+    .refine((evts) => evts.every((e, i) => i === 0 || e.event.timestampMs >= evts[i - 1]!.event.timestampMs), {
+      message: 'events must be in ascending timestampMs order',
+    }),
 });
 export type NormalizedMatch = z.infer<typeof normalizedMatchSchema>;
+
+/** The opposite side of the map. */
+export function opposingTeam(team: TeamSide): TeamSide {
+  return team === 'blue' ? 'red' : 'blue';
+}
+
+/**
+ * The side credited with a monster kill: `killerTeam` when attributed, else
+ * the killer's team; `undefined` for neutral kills (no credited side).
+ * Building kills credit `opposingTeam(ownerTeam)` by construction — callers
+ * handle them directly.
+ */
+export function securingTeam(
+  event: { killerTeam?: TeamSide; killerId?: number },
+  teamByParticipantId: ReadonlyMap<number, TeamSide>,
+): TeamSide | undefined {
+  return event.killerTeam ?? (event.killerId !== undefined ? teamByParticipantId.get(event.killerId) : undefined);
+}

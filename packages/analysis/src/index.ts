@@ -55,6 +55,22 @@ export type {
 export { computeMetrics, GOLD_DIFF_MINUTE, EARLY_GAME_END_MS, MID_GAME_END_MS } from './metrics.js';
 export type { GamePhase, DeathTiming, ObjectiveKindSummary, ObjectiveSummary, MatchMetrics } from './metrics.js';
 
+export {
+  detectMoments,
+  MOMENT_DETECTION_MIN_TIER,
+  DEATH_LOOKBACK_MS,
+  DEATH_LOOKAHEAD_MS,
+  TEAMFIGHT_GAP_MS,
+  TEAMFIGHT_MIN_KILLS,
+  TEAMFIGHT_LOOKBACK_MS,
+  TEAMFIGHT_LOOKAHEAD_MS,
+  OBJECTIVE_FIGHT_LINK_MS,
+  OBJECTIVE_KILL_LOOKBACK_MS,
+  OBJECTIVE_FALLBACK_LOOKBACK_MS,
+  OBJECTIVE_LOOKAHEAD_MS,
+} from './moment-detection.js';
+export type { MomentDetectionResult } from './moment-detection.js';
+
 export { matchV5ToNormalized } from './match-v5-mapper.js';
 export type {
   MatchV5Match,

@@ -1,4 +1,10 @@
-import type { LanePosition, NormalizedMatch, TeamSide } from './normalized-match.js';
+import {
+  opposingTeam,
+  securingTeam,
+  type LanePosition,
+  type NormalizedMatch,
+  type TeamSide,
+} from './normalized-match.js';
 
 /**
  * Deterministic metrics — pure functions on `NormalizedMatch`, never on raw
@@ -73,10 +79,6 @@ function lastFrameAtOrBefore(match: NormalizedMatch, limitMs: number) {
   return found;
 }
 
-function opposingTeam(team: TeamSide): TeamSide {
-  return team === 'blue' ? 'red' : 'blue';
-}
-
 function computeObjectives(match: NormalizedMatch, targetId: number, team: TeamSide): ObjectiveSummary {
   const byKind: ObjectiveSummary['byKind'] = {
     monster: { secured: 0, participated: 0 },
@@ -85,20 +87,20 @@ function computeObjectives(match: NormalizedMatch, targetId: number, team: TeamS
   const teamById = new Map(match.participants.map((p) => [p.participantId, p.team]));
 
   for (const { event } of match.events) {
-    let securingTeam: TeamSide | undefined;
+    let securing: TeamSide | undefined;
     let kind: keyof ObjectiveSummary['byKind'] | undefined;
 
     if (event.kind === 'monster-kill') {
-      securingTeam = event.killerTeam ?? (event.killerId !== undefined ? teamById.get(event.killerId) : undefined);
+      securing = securingTeam(event, teamById);
       kind = 'monster';
     } else if (event.kind === 'building-kill') {
-      securingTeam = opposingTeam(event.ownerTeam);
+      securing = opposingTeam(event.ownerTeam);
       kind = 'building';
     } else {
       continue;
     }
 
-    if (securingTeam !== team) continue;
+    if (securing !== team) continue;
     const summary = byKind[kind];
     summary.secured += 1;
     if (event.killerId === targetId || event.assistingIds.includes(targetId)) {
