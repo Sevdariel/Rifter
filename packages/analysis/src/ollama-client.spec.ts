@@ -126,6 +126,18 @@ describe('ollamaModelDigest', () => {
     expect(f.mock.calls[0]![0]).toBe('http://x/api/tags');
   });
 
+  it('normalizes a bare hex digest from /api/tags to sha256:<hex>', async () => {
+    const f = fakeFetch({
+      models: [{ name: 'm', digest: 'abcdef1234' }],
+    });
+    const digest = await ollamaModelDigest({
+      baseUrl: 'http://x',
+      model: 'm',
+      fetchImpl: f as unknown as typeof fetch,
+    });
+    expect(digest).toBe('sha256:abcdef1234');
+  });
+
   it('matches a bare repo name against the :latest tag', async () => {
     const f = fakeFetch({ models: [{ name: 'm:latest', digest: 'sha256:l8' }] });
     const digest = await ollamaModelDigest({
