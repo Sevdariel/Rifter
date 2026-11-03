@@ -326,13 +326,30 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
     'pushes the whole branch once at task completion',
     'never push commits individually',
     'never merges',
+    'ancestors of `origin/Develop`',
+    'merge resolutions',
   ])
     assert.ok(core.includes(requirement), `core.md: ${requirement}`);
   const agents = read('AGENTS.md');
   assert.ok(agents.includes('per-session topic branch'));
   assert.ok(agents.includes('`<type>-<issue-number>-<kebab-slug>`'));
   assert.ok(agents.includes('never commit directly to `Develop` or `master`'));
+  assert.ok(agents.includes('ancestors of `origin/Develop`'), 'AGENTS.md post-merge check');
   assert.ok(read('.devin/skills/github/SKILL.md').includes('never per-commit'), 'github SKILL.md push boundary');
+  assert.ok(
+    read('.devin/skills/github/SKILL.md').includes('where conflicts are likely'),
+    'github SKILL.md merge-conflict handoff',
+  );
+});
+
+test('worktree re-checks and rule pins guard against mid-session drift and rule loss', () => {
+  const core = read('.devin/rules/core.md');
+  for (const requirement of [
+    'after each user reply',
+    'concurrent user git operations',
+    '`.devin/tests/config.test.mjs` assertion in the same change',
+  ])
+    assert.ok(core.includes(requirement), `core.md: ${requirement}`);
 });
 
 test('session handover keeps the store read-only and handover files uncommitted', () => {

@@ -23,6 +23,7 @@ Sessions without a driving issue use a PascalCase topic name (e.g. `LiveCapture`
 - The remote branch is created when the local branch is created: `git push -u origin <branch>`.
 - When the task completes, the whole branch is pushed once: `git push`. Commits are never pushed one at a time as they land.
 - The agent never merges — merging to `Develop` is the user's call, and nothing is pushed directly to `Develop` or `master`.
+- After the user merges the branch to `Develop`, verify the commits are ancestors of `origin/Develop` and re-run the applicable checks on the merged `Develop` state — merge resolutions can silently break files.
 
 ## Technical notes
 

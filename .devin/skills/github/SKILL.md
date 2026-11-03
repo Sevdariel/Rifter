@@ -76,6 +76,7 @@ Bulk seeding: drive `gh` from a Node script (`execFileSync`, manifest array of e
 Review feedback for a task is recorded as comments on the task issue — both the user's requests and the agent's change notes — so the issue carries the full review history. Post them with `gh issue comment <N>`.
 
 Per-subtask status checklist: set `In Progress` when the session starts, `Code review` when the change is committed, `Done` + close with a completion comment only after the remote merge is verified (`git merge-base --is-ancestor <sha> origin/Develop`). Do not leave statuses stale between transitions.
+- When a session delivers multiple branches for the user to merge, the completion summary names the expected merge order and the specific files or anchor points where conflicts are likely — "expect conflicts" alone is not enough.
 
 Warning — editing Status field options (`updateProjectV2Field` `singleSelectOptions`) regenerates every option ID and nulls all items' status values. Before such an edit snapshot current statuses (`gh project item-list`), then restore every item afterwards with `item-edit`. Avoid option edits when a rename/add can be done in the UI.
 
