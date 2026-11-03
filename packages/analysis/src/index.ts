@@ -77,6 +77,9 @@ export type { AnalysisStage, OllamaClientConfig, OllamaUsage, OllamaGenerateResu
 export { analyzeMatch } from './analyze.js';
 export type { AnalyzeMatchDeps, AnalyzeMatchInput, AnalyzeTimings, AnalysisResult } from './analyze.js';
 
+export { selectModelTier, DEFAULT_MODEL_MANIFEST } from './model-tiers.js';
+export type { ModelManifestEntry, VramProbe } from './model-tiers.js';
+
 export { buildPrompt, PROMPT_VERSION, MAX_PROMPT_CANDIDATES } from './prompt-builder.js';
 export type { BuildPromptInput, BuiltPrompt } from './prompt-builder.js';
 

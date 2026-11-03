@@ -137,7 +137,11 @@ export async function ollamaModelDigest(config: OllamaClientConfig): Promise<str
     const match = body.models?.find(
       (m) => m.name === config.model || m.model === config.model || m.name === `${config.model}:latest`,
     );
-    return match?.digest || null;
+    // /api/tags returns a bare hex digest; normalize to the OCI-style
+    // `sha256:<hex>` form used in report metadata and the model manifest.
+    const digest = match?.digest;
+    if (!digest) return null;
+    return digest.includes(':') ? digest : `sha256:${digest}`;
   } catch {
     return null;
   } finally {
