@@ -80,10 +80,19 @@ function pidOrUndefined(value: unknown): number | undefined {
   return typeof value === 'number' && value >= 1 && value <= 10 ? value : undefined;
 }
 
+/** Strict: participants and buildings always belong to a side. */
 function toTeamSide(teamId: number): TeamSide {
   if (teamId === 100) return 'blue';
   if (teamId === 200) return 'red';
   throw new Error(`unexpected teamId ${teamId}`);
+}
+
+/**
+ * Lenient: Match-V5 emits `killerTeamId` 300 on monster kills with no team
+ * attribution (e.g. an objective killed without a credited side).
+ */
+function toTeamSideOrUndefined(teamId: unknown): TeamSide | undefined {
+  return teamId === 100 ? 'blue' : teamId === 200 ? 'red' : undefined;
 }
 
 function toLanePosition(p: MatchV5ParticipantInfo): LanePosition {
@@ -107,7 +116,7 @@ function toNormalizedEvent(event: MatchV5TimelineEvent): NormalizedEventKind | n
         kind: 'monster-kill',
         timestampMs: event.timestamp,
         killerId: pidOrUndefined(event.killerId),
-        killerTeam: toTeamSide(event.killerTeamId as number),
+        killerTeam: toTeamSideOrUndefined(event.killerTeamId),
         assistingIds: (event.assistingParticipantIds as number[]) ?? [],
         monsterType: event.monsterType as string,
         monsterSubType: event.monsterSubType as string | undefined,
