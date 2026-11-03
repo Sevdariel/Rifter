@@ -14,7 +14,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "fetch-fixtures": "node scripts/fetch-fixtures.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",
