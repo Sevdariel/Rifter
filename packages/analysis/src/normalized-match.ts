@@ -69,9 +69,10 @@ export type NormalizedFrame = z.infer<typeof normalizedFrameSchema>;
  * `killerId`/`creatorId` are absent when no champion is responsible (e.g. a
  * building finished by minions). `assistingIds` carries Match-V5
  * `assistingParticipantIds` where present. Team attribution stays explicit:
- * `killerTeam` on monster kills, `ownerTeam` (the side that lost the
- * building) on building kills — needed for `objective-lost` detection when
- * the killer is absent.
+ * `killerTeam` on monster kills (absent when the kill has no team
+ * attribution, e.g. Match-V5 `killerTeamId` 300), `ownerTeam` (the side
+ * that lost the building) on building kills — needed for
+ * `objective-lost` detection when the killer is absent.
  */
 export const normalizedEventSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -86,7 +87,7 @@ export const normalizedEventSchema = z.discriminatedUnion('kind', [
     kind: z.literal('monster-kill'),
     timestampMs: z.number().int().nonnegative(),
     killerId: participantIdSchema.optional(),
-    killerTeam: teamSideSchema,
+    killerTeam: teamSideSchema.optional(),
     assistingIds: z.array(participantIdSchema),
     monsterType: z.string().min(1),
     monsterSubType: z.string().optional(),

@@ -90,7 +90,7 @@ describe('matchV5ToNormalized', () => {
     expect(buildings.length).toBeGreaterThan(0);
     for (const e of monsters) {
       if (e.event.kind !== 'monster-kill') continue;
-      expect(e.event.killerTeam).toMatch(/^(blue|red)$/);
+      expect(e.event.killerTeam === undefined || /^(blue|red)$/.test(e.event.killerTeam)).toBe(true);
       expect(Array.isArray(e.event.assistingIds)).toBe(true);
     }
     for (const e of buildings) {
@@ -98,6 +98,30 @@ describe('matchV5ToNormalized', () => {
       expect(e.event.ownerTeam).toMatch(/^(blue|red)$/);
     }
     expect(monsters.some((e) => e.event.kind === 'monster-kill' && e.event.assistingIds.length > 0)).toBe(true);
+  });
+
+  it('maps unattributed monster kills (killerTeamId 300) to undefined killerTeam', () => {
+    let sawNeutral = false;
+    let sawTeam = false;
+    for (const f of fixtures) {
+      const normalized = toNormalized(f);
+      for (const frame of f.fixture.timeline.info.frames) {
+        for (const raw of frame.events ?? []) {
+          if (raw.type !== 'ELITE_MONSTER_KILL') continue;
+          const match = normalized.events.find(
+            (e) => e.event.kind === 'monster-kill' && e.event.timestampMs === raw.timestamp,
+          );
+          if (raw.killerTeamId === 300) {
+            sawNeutral = true;
+            expect(match?.event.kind === 'monster-kill' && match.event.killerTeam === undefined).toBe(true);
+          } else if (raw.killerTeamId === 100 || raw.killerTeamId === 200) {
+            sawTeam = true;
+          }
+        }
+      }
+    }
+    expect(sawNeutral).toBe(true);
+    expect(sawTeam).toBe(true);
   });
 
   it('maps non-champion killers to undefined', () => {
