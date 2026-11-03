@@ -182,16 +182,18 @@ export function matchV5ToNormalized(input: MatchV5Fixture, targetPuuid: string):
     throw new Error(`target puuid '${targetPuuid}' not found among participants`);
   }
 
-  const frames = timeline.info.frames.map((frame) => ({
-    timestampMs: frame.timestamp,
-    participants: Object.values(frame.participantFrames).map((pf) => ({
-      participantId: pf.participantId,
-      gold: pf.totalGold,
-      cs: pf.minionsKilled + pf.jungleMinionsKilled,
-      xp: pf.xp,
-      position: pf.position,
-    })),
-  }));
+  const frames = timeline.info.frames
+    .map((frame) => ({
+      timestampMs: frame.timestamp,
+      participants: Object.values(frame.participantFrames).map((pf) => ({
+        participantId: pf.participantId,
+        gold: pf.totalGold,
+        cs: pf.minionsKilled + pf.jungleMinionsKilled,
+        xp: pf.xp,
+        position: pf.position,
+      })),
+    }))
+    .sort((a, b) => a.timestampMs - b.timestampMs);
 
   const events = timeline.info.frames
     .flatMap((frame) => frame.events ?? [])

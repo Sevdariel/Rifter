@@ -133,7 +133,12 @@ export const normalizedMatchSchema = z.object({
   dataTier: dataTierSchema,
   targetParticipantId: participantIdSchema,
   participants: z.array(normalizedParticipantSchema).length(10),
-  frames: z.array(normalizedFrameSchema),
+  /** Ascending `timestampMs` order — enforced; metrics rely on it. */
+  frames: z
+    .array(normalizedFrameSchema)
+    .refine((f) => f.every((fr, i) => i === 0 || fr.timestampMs >= f[i - 1]!.timestampMs), {
+      message: 'frames must be in ascending timestampMs order',
+    }),
   events: z.array(timelineEventSchema),
 });
 export type NormalizedMatch = z.infer<typeof normalizedMatchSchema>;
