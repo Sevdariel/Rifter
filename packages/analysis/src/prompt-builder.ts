@@ -22,7 +22,7 @@ import {
  */
 
 /** Active prompt version; bump when the active `prompts/v<N>.md` changes. */
-export const PROMPT_VERSION = 1;
+export const PROMPT_VERSION = 2;
 
 /**
  * Maximum candidates sent to the model — keeps the prompt inside the
@@ -116,9 +116,6 @@ export function buildPrompt(input: BuildPromptInput): BuiltPrompt {
 
   const sections: string[] = [template.trimEnd()];
 
-  sections.push(`## Output language
-Write all prose fields (summary, label, mistake, fix) in ${LOCALE_LANGUAGE[locale]}.`);
-
   sections.push(`## Match context
 Match: ${match.matchId}
 Patch: ${match.patch}
@@ -151,6 +148,11 @@ Objective participation: ${metrics.objectives.participated}/${metrics.objectives
   });
   const omittedNote = omitted > 0 ? `\n\n(${omitted} further candidates omitted to fit the prompt budget)` : '';
   sections.push(`## Moment candidates\n${candidateLines.join('\n\n')}${omittedNote}`);
+
+  // Language directive sits last: recency position keeps small models from
+  // drifting back to English over a long candidates section.
+  sections.push(`## Output language
+Write all prose fields (summary, label, mistake, fix) in ${LOCALE_LANGUAGE[locale]}.`);
 
   return { prompt: sections.join('\n\n'), promptVersion: PROMPT_VERSION, locale, shownCandidates: shown };
 }
