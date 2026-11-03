@@ -74,7 +74,12 @@ export type ReportMetadata = z.infer<typeof reportMetadataSchema>;
 /** What the LLM actually emits — no provenance, only the coached content. */
 export const llmOutputSchema = z.object({
   summary: z.string().min(1),
-  topPriority: z.number().int().nonnegative().optional(),
+  topPriority: z
+    .number()
+    .int()
+    .nonnegative()
+    .optional()
+    .describe('0-based index into the moments array of this output'),
   moments: z.array(reportMomentSchema).max(10),
 });
 export type LlmOutput = z.infer<typeof llmOutputSchema>;

@@ -71,6 +71,9 @@ export {
 } from './moment-detection.js';
 export type { MomentDetectionResult } from './moment-detection.js';
 
+export { buildPrompt, PROMPT_VERSION, MAX_PROMPT_CANDIDATES } from './prompt-builder.js';
+export type { BuildPromptInput, BuiltPrompt } from './prompt-builder.js';
+
 export { matchV5ToNormalized } from './match-v5-mapper.js';
 export type {
   MatchV5Match,

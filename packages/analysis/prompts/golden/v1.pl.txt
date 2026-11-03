@@ -1,0 +1,219 @@
+You are a League of Legends coaching analyst. You analyze one finished game of a single player (the TARGET) and produce a structured coaching report.
+
+Rules you must follow:
+
+- You receive deterministic, curated facts only: match context, metrics, and candidate moment windows. Never invent statistics, timestamps, or events that are not in the input.
+- Every moment in your report must copy `t_start` and `t_end` verbatim from exactly one candidate. You select candidates; you never create, resize, or merge windows.
+- Pick at most 10 moments — the ones where coaching adds the most value. Fewer is fine; not every candidate deserves narration.
+- `label` is a short title, `mistake` describes what the target did wrong (grounded in the facts), `fix` gives one concrete, actionable correction. Reference concrete evidence: events and metrics; cite times as mm:ss.
+- `summary` is 2–3 sentences of overall assessment for the whole game.
+- `topPriority` is the 0-based index into the `moments` array of your own output — the moment the target should fix first; omit it only when there are no moments.
+- `teamfight` candidates are temporal kill clusters — do not assert the target was physically present unless the events inside the window show it.
+- Treat metrics honestly: `unavailable` means the data cannot support that number — never guess it.
+- The input contains no positional data — do not describe map locations or movement.
+- Output JSON only, conforming to the provided schema. No markdown, no commentary.
+
+## Output language
+Write all prose fields (summary, label, mistake, fix) in Polish.
+
+## Match context
+Match: EUN1_4021648224
+Patch: 16.21.829.8620
+Queue: 400
+Duration: 35:15
+Data tier: basic (positions sampled every 60 s)
+Target: TARGET MIDDLE Ahri
+
+## Metrics (target player)
+CS/min: 5.8
+Kill participation: 32.6%
+Damage share: 23.4%
+Vision score: 28 (0.8/min)
+Gold diff at 15 min: -1262
+Deaths: 9 (early 4, mid 2, late 3)
+Objective participation: 4/22 of team objectives (18.2%)
+
+## Moment candidates
+[0] teamfight (kill cluster) 01:46–02:43  t_start=106406 t_end=163716
+  - 01:56 red UTILITY Velkoz killed blue BOTTOM Yasuo (assists: red BOTTOM Jhin)
+  - 02:01 red BOTTOM Jhin killed blue UTILITY Kindred (assists: red UTILITY Velkoz)
+  - 02:28 red MIDDLE Lux killed TARGET MIDDLE Ahri
+
+[1] death 01:58–02:38  t_start=118716 t_end=158716
+  - 02:01 red BOTTOM Jhin killed blue UTILITY Kindred (assists: red UTILITY Velkoz)
+  - 02:28 red MIDDLE Lux killed TARGET MIDDLE Ahri
+
+[2] death 04:41–05:21  t_start=281361 t_end=321361
+  - 05:11 red MIDDLE Lux killed TARGET MIDDLE Ahri
+  - 05:19 blue JUNGLE XinZhao killed red MIDDLE Lux (assists: TARGET MIDDLE Ahri)
+
+[3] teamfight (kill cluster) 05:01–05:42  t_start=301361 t_end=342463
+  - 05:11 red MIDDLE Lux killed TARGET MIDDLE Ahri
+  - 05:19 blue JUNGLE XinZhao killed red MIDDLE Lux (assists: TARGET MIDDLE Ahri)
+  - 05:27 red TOP Gragas killed blue TOP Yone
+
+[4] teamfight (kill cluster) 06:46–07:47  t_start=406851 t_end=467030
+  - 06:56 red TOP Gragas killed blue TOP Yone (assists: red JUNGLE Blitzcrank)
+  - 07:15 blue UTILITY Kindred killed red UTILITY Velkoz (assists: blue JUNGLE XinZhao, blue BOTTOM Yasuo)
+  - 07:16 red BOTTOM Jhin killed blue UTILITY Kindred (assists: red UTILITY Velkoz)
+  - 07:28 red BOTTOM Jhin killed blue JUNGLE XinZhao (assists: red UTILITY Velkoz)
+  - 07:32 blue BOTTOM Yasuo killed red BOTTOM Jhin (assists: blue JUNGLE XinZhao)
+
+[5] teamfight (kill cluster) 09:42–10:53  t_start=582531 t_end=653682
+  - 09:52 blue BOTTOM Yasuo killed red BOTTOM Jhin (assists: blue UTILITY Kindred)
+  - 10:16 blue TOP Yone killed red TOP Gragas (assists: blue JUNGLE XinZhao)
+  - 10:35 red MIDDLE Lux killed TARGET MIDDLE Ahri
+  - 10:38 red UTILITY Velkoz killed blue UTILITY Kindred (assists: red BOTTOM Jhin)
+  - 10:41 blue secured HORDE
+  - 10:50 blue secured HORDE
+
+[6] death 10:05–10:45  t_start=605206 t_end=645206
+  - 10:16 blue TOP Yone killed red TOP Gragas (assists: blue JUNGLE XinZhao)
+  - 10:35 red MIDDLE Lux killed TARGET MIDDLE Ahri
+  - 10:38 red UTILITY Velkoz killed blue UTILITY Kindred (assists: red BOTTOM Jhin)
+  - 10:41 blue secured HORDE
+
+[7] teamfight (kill cluster) 11:44–12:32  t_start=704554 t_end=752975
+  - 11:54 red BOTTOM Jhin killed blue UTILITY Kindred (assists: red JUNGLE Blitzcrank, red MIDDLE Lux, red UTILITY Velkoz)
+  - 12:00 TARGET MIDDLE Ahri killed red MIDDLE Lux (assists: blue JUNGLE XinZhao)
+  - 12:13 blue JUNGLE XinZhao killed red UTILITY Velkoz (assists: TARGET MIDDLE Ahri)
+  - 12:17 blue BOTTOM Yasuo killed red BOTTOM Jhin (assists: TARGET MIDDLE Ahri)
+
+[8] death 13:13–13:53  t_start=793453 t_end=833453
+  - 13:43 red MIDDLE Lux killed TARGET MIDDLE Ahri
+
+[9] teamfight (kill cluster) 14:26–15:20  t_start=866907 t_end=920608
+  - 14:36 blue JUNGLE XinZhao killed red MIDDLE Lux (assists: TARGET MIDDLE Ahri)
+  - 14:53 blue BOTTOM Yasuo killed red BOTTOM Jhin (assists: blue UTILITY Kindred)
+  - 15:05 red UTILITY Velkoz killed blue UTILITY Kindred (assists: red JUNGLE Blitzcrank)
+
+[10] objective-lost 14:55–16:15  t_start=895608 t_end=975203
+  - 15:05 red UTILITY Velkoz killed blue UTILITY Kindred (assists: red JUNGLE Blitzcrank)
+  - 15:49 blue JUNGLE XinZhao killed red TOP Gragas (assists: blue TOP Yone)
+  - 16:04 blue JUNGLE XinZhao killed red JUNGLE Blitzcrank (assists: blue TOP Yone)
+  - 16:05 blue lost TOWER_BUILDING MID_LANE (OUTER_TURRET)
+  - 16:11 blue UTILITY Kindred killed red BOTTOM Jhin (assists: blue BOTTOM Yasuo)
+
+[11] teamfight (kill cluster) 15:39–17:01  t_start=939248 t_end=1021171
+  - 15:49 blue JUNGLE XinZhao killed red TOP Gragas (assists: blue TOP Yone)
+  - 16:04 blue JUNGLE XinZhao killed red JUNGLE Blitzcrank (assists: blue TOP Yone)
+  - 16:05 blue lost TOWER_BUILDING MID_LANE (OUTER_TURRET)
+  - 16:11 blue UTILITY Kindred killed red BOTTOM Jhin (assists: blue BOTTOM Yasuo)
+  - 16:17 red MIDDLE Lux killed blue UTILITY Kindred (assists: red BOTTOM Jhin, red UTILITY Velkoz)
+  - 16:20 red lost TOWER_BUILDING TOP_LANE (OUTER_TURRET)
+  - 16:39 red lost TOWER_BUILDING MID_LANE (OUTER_TURRET)
+  - 16:43 red MIDDLE Lux killed blue BOTTOM Yasuo (assists: red UTILITY Velkoz)
+  - 16:46 blue TOP Yone killed red TOP Gragas (assists: blue JUNGLE XinZhao)
+
+[12] teamfight (kill cluster) 17:14–18:27  t_start=1034782 t_end=1107130
+  - 17:24 red BOTTOM Jhin killed blue UTILITY Kindred (assists: red UTILITY Velkoz)
+  - 17:50 blue TOP Yone killed red MIDDLE Lux (assists: blue JUNGLE XinZhao)
+  - 17:52 red BOTTOM Jhin killed blue BOTTOM Yasuo (assists: red UTILITY Velkoz)
+  - 18:07 blue TOP Yone killed red BOTTOM Jhin (assists: blue JUNGLE XinZhao, blue BOTTOM Yasuo)
+  - 18:12 blue TOP Yone killed red UTILITY Velkoz (assists: blue JUNGLE XinZhao)
+
+[13] teamfight (kill cluster) 18:54–20:03  t_start=1134371 t_end=1203346
+  - 19:04 blue JUNGLE XinZhao killed red BOTTOM Jhin (assists: TARGET MIDDLE Ahri)
+  - 19:10 blue TOP Yone killed red TOP Gragas
+  - 19:15 red UTILITY Velkoz killed blue UTILITY Kindred
+  - 19:19 red lost TOWER_BUILDING BOT_LANE (OUTER_TURRET)
+  - 19:27 blue TOP Yone killed red JUNGLE Blitzcrank (assists: blue JUNGLE XinZhao, TARGET MIDDLE Ahri)
+  - 19:45 no team secured RIFTHERALD
+  - 19:48 red MIDDLE Lux killed blue TOP Yone (assists: red BOTTOM Jhin)
+
+[14] teamfight (kill cluster) 21:01–22:45  t_start=1261430 t_end=1365858
+  - 21:11 blue UTILITY Kindred killed red MIDDLE Lux (assists: blue TOP Yone)
+  - 21:15 blue UTILITY Kindred killed red BOTTOM Jhin (assists: blue TOP Yone, blue JUNGLE XinZhao)
+  - 21:30 TARGET MIDDLE Ahri killed red UTILITY Velkoz (assists: blue TOP Yone)
+  - 21:44 TARGET MIDDLE Ahri killed red JUNGLE Blitzcrank
+  - 21:50 red lost TOWER_BUILDING MID_LANE (BASE_TURRET)
+  - 21:56 red lost INHIBITOR_BUILDING MID_LANE
+  - 22:07 red BOTTOM Jhin killed TARGET MIDDLE Ahri
+  - 22:11 red lost TOWER_BUILDING BOT_LANE (INNER_TURRET)
+  - 22:12 red BOTTOM Jhin killed blue TOP Yone (assists: red MIDDLE Lux)
+  - 22:25 red lost TOWER_BUILDING TOP_LANE (INNER_TURRET)
+  - 22:30 red MIDDLE Lux killed blue UTILITY Kindred (assists: red TOP Gragas, red BOTTOM Jhin, red UTILITY Velkoz)
+
+[15] death 21:37–22:17  t_start=1297154 t_end=1337154
+  - 21:44 TARGET MIDDLE Ahri killed red JUNGLE Blitzcrank
+  - 21:50 red lost TOWER_BUILDING MID_LANE (BASE_TURRET)
+  - 21:56 red lost INHIBITOR_BUILDING MID_LANE
+  - 22:07 red BOTTOM Jhin killed TARGET MIDDLE Ahri
+  - 22:11 red lost TOWER_BUILDING BOT_LANE (INNER_TURRET)
+  - 22:12 red BOTTOM Jhin killed blue TOP Yone (assists: red MIDDLE Lux)
+
+[16] death 23:03–23:43  t_start=1383822 t_end=1423822
+  - 23:32 red UTILITY Velkoz killed blue BOTTOM Yasuo (assists: red TOP Gragas, red JUNGLE Blitzcrank)
+  - 23:33 red MIDDLE Lux killed TARGET MIDDLE Ahri
+
+[17] teamfight (kill cluster) 23:22–24:36  t_start=1402349 t_end=1476077
+  - 23:32 red UTILITY Velkoz killed blue BOTTOM Yasuo (assists: red TOP Gragas, red JUNGLE Blitzcrank)
+  - 23:33 red MIDDLE Lux killed TARGET MIDDLE Ahri
+  - 23:46 blue TOP Yone killed red JUNGLE Blitzcrank (assists: blue JUNGLE XinZhao)
+  - 23:51 blue TOP Yone killed red TOP Gragas (assists: blue JUNGLE XinZhao)
+  - 23:55 blue TOP Yone killed red BOTTOM Jhin (assists: blue JUNGLE XinZhao)
+  - 23:59 red MIDDLE Lux killed blue TOP Yone (assists: red TOP Gragas, red JUNGLE Blitzcrank, red BOTTOM Jhin, red UTILITY Velkoz)
+  - 24:04 blue JUNGLE XinZhao killed red MIDDLE Lux
+  - 24:21 red UTILITY Velkoz killed blue UTILITY Kindred
+  - 24:35 blue secured DRAGON (WATER_DRAGON)
+
+[18] teamfight (kill cluster) 25:22–26:26  t_start=1522188 t_end=1586600
+  - 25:32 red MIDDLE Lux killed blue UTILITY Kindred
+  - 25:36 blue JUNGLE XinZhao killed red TOP Gragas (assists: TARGET MIDDLE Ahri)
+  - 25:46 blue JUNGLE XinZhao killed red UTILITY Velkoz (assists: blue TOP Yone)
+  - 25:46 TARGET MIDDLE Ahri killed red JUNGLE Blitzcrank (assists: blue TOP Yone, blue JUNGLE XinZhao)
+  - 26:11 red MIDDLE Lux killed TARGET MIDDLE Ahri
+
+[19] death 25:41–26:21  t_start=1541600 t_end=1581600
+  - 25:46 blue JUNGLE XinZhao killed red UTILITY Velkoz (assists: blue TOP Yone)
+  - 25:46 TARGET MIDDLE Ahri killed red JUNGLE Blitzcrank (assists: blue TOP Yone, blue JUNGLE XinZhao)
+  - 26:11 red MIDDLE Lux killed TARGET MIDDLE Ahri
+
+[20] objective-lost 26:53–28:10  t_start=1613104 t_end=1690109
+  - 27:03 red UTILITY Velkoz killed blue UTILITY Kindred (assists: red TOP Gragas, red MIDDLE Lux)
+  - 27:49 red TOP Gragas killed TARGET MIDDLE Ahri (assists: red UTILITY Velkoz)
+  - 27:58 red MIDDLE Lux killed blue TOP Yone (assists: red TOP Gragas, red BOTTOM Jhin, red UTILITY Velkoz)
+  - 28:00 blue lost TOWER_BUILDING TOP_LANE (OUTER_TURRET)
+
+[21] death 27:19–27:59  t_start=1639873 t_end=1679873
+  - 27:49 red TOP Gragas killed TARGET MIDDLE Ahri (assists: red UTILITY Velkoz)
+  - 27:58 red MIDDLE Lux killed blue TOP Yone (assists: red TOP Gragas, red BOTTOM Jhin, red UTILITY Velkoz)
+
+[22] objective-lost 27:39–28:54  t_start=1659873 t_end=1734100
+  - 27:49 red TOP Gragas killed TARGET MIDDLE Ahri (assists: red UTILITY Velkoz)
+  - 27:58 red MIDDLE Lux killed blue TOP Yone (assists: red TOP Gragas, red BOTTOM Jhin, red UTILITY Velkoz)
+  - 28:00 blue lost TOWER_BUILDING TOP_LANE (OUTER_TURRET)
+  - 28:29 red MIDDLE Lux killed blue UTILITY Kindred
+  - 28:37 red UTILITY Velkoz killed blue BOTTOM Yasuo (assists: red MIDDLE Lux)
+  - 28:41 blue JUNGLE XinZhao killed red MIDDLE Lux
+  - 28:44 blue lost TOWER_BUILDING BOT_LANE (OUTER_TURRET)
+  - 28:47 blue JUNGLE XinZhao killed red BOTTOM Jhin
+
+[23] teamfight (kill cluster) 28:19–29:02  t_start=1699750 t_end=1742831
+  - 28:29 red MIDDLE Lux killed blue UTILITY Kindred
+  - 28:37 red UTILITY Velkoz killed blue BOTTOM Yasuo (assists: red MIDDLE Lux)
+  - 28:41 blue JUNGLE XinZhao killed red MIDDLE Lux
+  - 28:44 blue lost TOWER_BUILDING BOT_LANE (OUTER_TURRET)
+  - 28:47 blue JUNGLE XinZhao killed red BOTTOM Jhin
+
+[24] death 32:33–33:13  t_start=1953726 t_end=1993726
+  - 32:56 blue secured BARON_NASHOR
+  - 33:03 red JUNGLE Blitzcrank killed TARGET MIDDLE Ahri
+  - 33:03 TARGET MIDDLE Ahri killed red JUNGLE Blitzcrank
+
+[25] teamfight (kill cluster) 32:53–33:36  t_start=1973726 t_end=2016515
+  - 32:56 blue secured BARON_NASHOR
+  - 33:03 red JUNGLE Blitzcrank killed TARGET MIDDLE Ahri
+  - 33:03 TARGET MIDDLE Ahri killed red JUNGLE Blitzcrank
+  - 33:18 red UTILITY Velkoz killed blue BOTTOM Yasuo (assists: red MIDDLE Lux, red BOTTOM Jhin)
+  - 33:21 blue TOP Yone killed red BOTTOM Jhin (assists: blue UTILITY Kindred)
+
+[26] teamfight (kill cluster) 34:06–34:51  t_start=2046911 t_end=2091184
+  - 34:16 red MIDDLE Lux killed blue UTILITY Kindred (assists: red JUNGLE Blitzcrank)
+  - 34:17 blue UTILITY Kindred killed red MIDDLE Lux
+  - 34:30 blue JUNGLE XinZhao killed red BOTTOM Jhin
+  - 34:33 blue JUNGLE XinZhao killed red JUNGLE Blitzcrank
+  - 34:36 blue TOP Yone killed red UTILITY Velkoz (assists: blue JUNGLE XinZhao)
+  - 34:42 red lost TOWER_BUILDING TOP_LANE (BASE_TURRET)
+  - 34:48 red lost INHIBITOR_BUILDING MID_LANE
+  - 34:49 red lost INHIBITOR_BUILDING TOP_LANE
