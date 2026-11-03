@@ -138,6 +138,33 @@ describe('matchV5ToNormalized', () => {
     throw new Error('no fixture exercised killerId=0 on a building kill');
   });
 
+  it('emits frames in ascending timestamp order', () => {
+    for (const f of fixtures) {
+      const normalized = toNormalized(f);
+      const timestamps = normalized.frames.map((fr) => fr.timestampMs);
+      expect([...timestamps].sort((a, b) => a - b)).toEqual(timestamps);
+    }
+  });
+
+  it('sorts frames even when the source payload is out of order', () => {
+    const f = fixtures[0]!.fixture;
+    const shuffled: MatchV5Fixture = {
+      match: f.match,
+      timeline: {
+        info: { frames: [...f.timeline.info.frames].reverse() },
+      },
+    };
+    const normalized = matchV5ToNormalized(shuffled, 'puuid-target');
+    const timestamps = normalized.frames.map((fr) => fr.timestampMs);
+    expect([...timestamps].sort((a, b) => a - b)).toEqual(timestamps);
+  });
+
+  it('rejects an unsorted frames array at the schema boundary', () => {
+    const normalized = toNormalized(fixtures[0]!);
+    const tampered = { ...normalized, frames: [...normalized.frames].reverse() };
+    expect(normalizedMatchSchema.safeParse(tampered).success).toBe(false);
+  });
+
   it('converts gameDuration seconds to milliseconds', () => {
     const f = fixtures[0]!;
     const normalized = toNormalized(f);

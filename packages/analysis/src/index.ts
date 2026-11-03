@@ -52,6 +52,9 @@ export type {
   NormalizedMatch,
 } from './normalized-match.js';
 
+export { computeMetrics, GOLD_DIFF_MINUTE, EARLY_GAME_END_MS, MID_GAME_END_MS } from './metrics.js';
+export type { GamePhase, DeathTiming, ObjectiveKindSummary, ObjectiveSummary, MatchMetrics } from './metrics.js';
+
 export { matchV5ToNormalized } from './match-v5-mapper.js';
 export type {
   MatchV5Match,
