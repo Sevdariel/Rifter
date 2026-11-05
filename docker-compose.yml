@@ -24,6 +24,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      # The container must listen on all interfaces for the published port;
+      # the loopback default applies to the host dev server.
+      HOST: 0.0.0.0
+      # Dev default only; set API_AUTH_TOKEN in .env to override.
+      API_AUTH_TOKEN: ${API_AUTH_TOKEN:-rifter-dev-token}
       # Wired for the M2 database module; not consumed yet.
       DATABASE_URL: postgres://${POSTGRES_USER:-rifter}:${POSTGRES_PASSWORD:-rifter}@db:5432/${POSTGRES_DB:-rifter}
     ports:
