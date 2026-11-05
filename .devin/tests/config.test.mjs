@@ -352,6 +352,19 @@ test('worktree re-checks and rule pins guard against mid-session drift and rule 
     assert.ok(core.includes(requirement), `core.md: ${requirement}`);
 });
 
+test('commit freshness and complete-output verdict rules stay pinned', () => {
+  const core = read('.devin/rules/core.md');
+  for (const requirement of [
+    'fresh, complete run of the applicable test suite',
+    'exact tree being committed',
+    'never report or commit on a `tail` excerpt',
+  ])
+    assert.ok(core.includes(requirement), `core.md: ${requirement}`);
+  const skill = read('.devin/skills/run-tests/SKILL.md');
+  for (const requirement of ['complete output only', 'overflow file', 'not a result'])
+    assert.ok(skill.includes(requirement), `run-tests: ${requirement}`);
+});
+
 test('session handover keeps the store read-only and handover files uncommitted', () => {
   const skill = read('.devin/skills/session-handover/SKILL.md');
   for (const requirement of ['session-handover.mjs', 'Never commit', 'read-only', 'main-chain'])
