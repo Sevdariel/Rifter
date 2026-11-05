@@ -330,6 +330,9 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
     'pushes the whole branch once at task completion',
     'never push commits individually',
     'never merges',
+    'task-level issue',
+    'own session branch',
+    'do not roll the next issue',
     'ancestors of `origin/Develop`',
     'merge resolutions',
   ])
@@ -344,6 +347,10 @@ test('session branch rule keeps commits off Develop/master with safe branch crea
     read('.devin/skills/github/SKILL.md').includes('where conflicts are likely'),
     'github SKILL.md merge-conflict handoff',
   );
+  const githubSkill = read('.devin/skills/github/SKILL.md');
+  for (const requirement of ['label `story`', 'No epics under epics']) {
+    assert.ok(githubSkill.includes(requirement), `github SKILL.md taxonomy: ${requirement}`);
+  }
 });
 
 test('worktree re-checks and rule pins guard against mid-session drift and rule loss', () => {
