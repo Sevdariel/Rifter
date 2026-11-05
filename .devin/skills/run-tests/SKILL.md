@@ -12,6 +12,7 @@ Run commands from the repository root. Use the installed toolchains and project-
 
 ## Verification scope
 
+- Every commit is preceded by a test run **and** the affected build — test runners transpile without typechecking (swc/esbuild), so a green test run alone does not prove the tree compiles.
 - During implementation, run assigned focused tests for the affected app or package. Record their scope; they do not substitute for final integrated verification.
 - For final application verification, run the full builds and suites below for the affected units and integration boundaries. A change in `packages/analysis` or `packages/ui` affects every consuming app. For configuration-only agent changes, run the agent configuration suite and the orchestration protocol's independent reviews/runtime exercises; application builds are unnecessary unless application/build behavior also changed.
 - For read-only reviews, still run the builds and tests able to confirm or refute candidate findings. Report skipped checks under Limitations. Do not install missing tooling; report absent capabilities and request approval separately.
