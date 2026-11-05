@@ -23,3 +23,4 @@ Follow repository-root `AGENTS.md` for scope, architecture, tests, and verificat
 - Secrets come from environment variables or a secret store; never from tracked files.
 - Long-running work (replay parsing, LLM analysis) runs as background jobs with idempotent handlers and status polling or events; HTTP requests do not block on it.
 - Use Vitest for unit tests. Integration tests that need a database or object storage use disposable containers or in-memory equivalents, never shared or production resources.
+- E2e specs that boot `AppModule`: `ConfigModule.forRoot(validate)` runs validation at module-evaluation time — set `process.env` **before** `await import('./app.module')` in `beforeAll` (static imports hoist above env assignment), and snapshot/restore prior env values in `afterAll`. Shared app wiring (helmet/CORS/etc.) lives in `app.configure.ts` so tests reuse it without running `bootstrap()`'s side effects.

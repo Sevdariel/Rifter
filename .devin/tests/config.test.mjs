@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
@@ -374,6 +376,57 @@ test('commit freshness and complete-output verdict rules stay pinned', () => {
   const skill = read('.devin/skills/run-tests/SKILL.md');
   for (const requirement of ['complete output only', 'overflow file', 'not a result'])
     assert.ok(skill.includes(requirement), `run-tests: ${requirement}`);
+});
+
+test('retrospective lessons stay pinned', () => {
+  const agents = read('AGENTS.md');
+  assert.ok(
+    agents.includes('overrides any external or default commit template'),
+    'AGENTS.md: trailer rule override',
+  );
+  const runTests = read('.devin/skills/run-tests/SKILL.md');
+  assert.ok(runTests.includes('transpile without typechecking'), 'run-tests: build-before-commit rule');
+  const backend = read('.devin/rules/backend.md');
+  assert.ok(backend.includes('module-evaluation time'), 'backend.md: e2e env-ordering note');
+  const github = read('.devin/skills/github/SKILL.md');
+  assert.ok(github.includes('Bulk status updates'), 'github SKILL.md: bulk update note');
+  const analyst = read('.devin/agents/session-analyst.md');
+  for (const requirement of ['evidence-backed or speculative', 'Do not read secrets'])
+    assert.ok(analyst.includes(requirement), `session-analyst: ${requirement}`);
+  const hook = read('.devin/scripts/telemetry-hook.mjs');
+  assert.ok(hook.includes('exit_code'), 'telemetry hook: exit-code failure capture');
+});
+
+test('telemetry hook records exit-code and error failures', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'rifter-telemetry-'));
+  mkdirSync(join(dir, '.devin'), { recursive: true });
+  const run = (toolResponse) => {
+    execFileSync(process.execPath, [resolve(root, '.devin/scripts/telemetry-hook.mjs')], {
+      input: JSON.stringify({
+        hook_event_name: 'PostToolUse',
+        session_id: 'test',
+        tool_name: 'exec',
+        tool_response: toolResponse,
+      }),
+      env: { ...process.env, DEVIN_PROJECT_DIR: dir },
+    });
+    const lines = readFileSync(join(dir, '.devin/telemetry/tool-calls.jsonl'), 'utf8')
+      .trim()
+      .split('\n');
+    return JSON.parse(lines.at(-1));
+  };
+  assert.equal(run({ success: true }).ok, true);
+  assert.equal(run({ success: false }).ok, false);
+  assert.equal(run({ error: 'boom' }).ok, false);
+  const nonZero = run({ success: true, exit_code: 1 });
+  assert.equal(nonZero.ok, false);
+  assert.equal(nonZero.exit_code, 1);
+  const camel = run({ exitCode: 2 });
+  assert.equal(camel.ok, false);
+  assert.equal(camel.exit_code, 2);
+  const zero = run({ exit_code: 0 });
+  assert.equal(zero.ok, true);
+  assert.equal(zero.exit_code, 0);
 });
 
 test('session handover keeps the store read-only and handover files uncommitted', () => {

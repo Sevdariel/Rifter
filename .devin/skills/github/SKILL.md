@@ -85,6 +85,8 @@ Warning — editing Status field options (`updateProjectV2Field` `singleSelectOp
 gh project item-edit 1 --owner Sevdariel --url https://github.com/Sevdariel/Rifter/issues/<N> --field Status --value "<Todo|In Progress|Code review|Done|Closed>"
 ```
 
+Bulk status updates (more than ~5 items): a sequential `gh` loop exceeds the 30 s foreground ceiling — run it as a background shell (`timeout: 0`) or drive it from a Node script like the bulk seeder, then collect output with `get_output`.
+
 ## Boundaries
 
 - Never print, paste, or commit tokens (`gh auth token` output is off-limits for logs, issues, files, and chat).

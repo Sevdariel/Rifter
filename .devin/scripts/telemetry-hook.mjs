@@ -44,7 +44,13 @@ export function buildRecord(payload) {
   switch (record.event) {
     case 'PostToolUse': {
       const response = payload.tool_response || {};
-      record.ok = Boolean(response.success);
+      // success=true alone is not trustworthy: exec non-zero exits have been
+      // observed reporting success. Mark failure on explicit success=false,
+      // any error payload, or a recorded non-zero exit code.
+      const exitCode = response.exit_code ?? response.exitCode;
+      record.ok =
+        response.success !== false && !response.error && !(typeof exitCode === 'number' && exitCode !== 0);
+      if (typeof exitCode === 'number') record.exit_code = exitCode;
       record.output_bytes = bytes(text(response.output));
       if (response.error) record.error_chars = chars(response.error);
       break;
