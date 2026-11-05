@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rifter}
       POSTGRES_DB: ${POSTGRES_DB:-rifter}
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
       - rifter-pgdata:/var/lib/postgresql
     healthcheck:
@@ -24,10 +24,16 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      # The container must listen on all interfaces for the published port;
+      # the loopback default applies to the host dev server.
+      HOST: 0.0.0.0
+      # Dev default only; set API_AUTH_TOKEN in .env to override.
+      API_AUTH_TOKEN: ${API_AUTH_TOKEN:-rifter-dev-token}
       # Wired for the M2 database module; not consumed yet.
       DATABASE_URL: postgres://${POSTGRES_USER:-rifter}:${POSTGRES_PASSWORD:-rifter}@db:5432/${POSTGRES_DB:-rifter}
+    # Loopback-only publish: the API stays unreachable from LAN.
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     depends_on:
       db:
         condition: service_healthy
