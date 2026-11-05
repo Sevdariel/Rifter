@@ -3,6 +3,8 @@ import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
+import { AuthModule } from "./auth/auth.module";
+import { TokenAuthGuard } from "./auth/token-auth.guard";
 import { validateEnv } from "./config/env.validation";
 import { HealthModule } from "./health/health.module";
 import { SharedModule } from "./shared/shared.module";
@@ -14,8 +16,13 @@ import { SharedModule } from "./shared/shared.module";
     // endpoints that spend Riot calls and GPU minutes.
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 300 }] }),
     SharedModule,
+    AuthModule,
     HealthModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  // Throttle first, then authenticate.
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: TokenAuthGuard },
+  ],
 })
 export class AppModule {}
