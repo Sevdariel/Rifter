@@ -2,6 +2,9 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
+# Supply-chain gate: skip releases published less than 7 days ago (minutes).
+minimumReleaseAge: 10080
+
 allowBuilds:
   '@parcel/watcher': true
   '@swc/core': true

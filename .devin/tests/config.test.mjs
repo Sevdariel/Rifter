@@ -84,6 +84,10 @@ test('shared MCP servers use exact pinned versions and no credentials', () => {
   assert.doesNotMatch(read('.devin/mcp_config.json'), /headers|Bearer|token|github_pat_/i);
 });
 
+test('pnpm keeps a 7-day minimum release age for dependency supply-chain safety', () => {
+  assert.match(read('pnpm-workspace.yaml'), /^minimumReleaseAge: 10080$/m);
+});
+
 test('local agent configuration and personal data stay gitignored', () => {
   const ignore = read('.gitignore');
   for (const entry of [
