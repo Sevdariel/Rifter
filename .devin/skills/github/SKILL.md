@@ -22,7 +22,7 @@ GitHub Issues + Projects are the task tracker for Rifter (`docs/roadmap.md` hold
 - Repo `Sevdariel/Rifter`; the user-level project board `Rifter` is project number `1` (`--owner Sevdariel`).
 - Milestones: `M0 Repository scaffold`, `M1 packages/analysis`, `M2 apps/api`, `M3 apps/web dev-harness`, `M4 Design system + first views`, `Backlog`. Discover current ones with `gh api repos/Sevdariel/Rifter/milestones` — do not hardcode beyond this list.
 - Issue taxonomy: milestone epics (label `epic`) → stories (label `story`, feature-level containers that may hold sub-task sub-issues) → task sub-issues. No epics under epics — a standalone epic exists only for work that does not belong to a milestone epic.
-- Milestone epics are issues labeled `epic` — discover them with `gh issue list -R Sevdariel/Rifter -l epic` rather than trusting hardcoded numbers (seed state: #1 M0, #8 M1, #17 M2, #24 M3, #27 M4, #33 Backlog); their tasks are native sub-issues.
+- Milestone epics are issues labeled `epic` — discover them with `gh issue list -R Sevdariel/Rifter -l epic` rather than trusting hardcoded numbers (seed state: #1 M0, #8 M1, #17 M2, #24 M3, #27 M4, #33 Backlog); their stories/tasks are native sub-issues.
 - New work item: create the issue with the right `-m "<milestone title>"`, attach it to the matching epic or story as a sub-issue, add it to the project board.
 - Issue bodies in English: scope + acceptance criteria. Titles imperative and short.
 - Commits and PRs may reference `#N`; GitHub links them automatically. `Fixes #N` in a commit message closes the issue — use deliberately, never by accident.

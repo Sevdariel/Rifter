@@ -11,12 +11,12 @@ When an agent session that changes files starts, it creates the branch before th
 ```
 
 - `<type>` — conventional-commit type matching the issue: `feat`, `fix`, `docs`, `chore`, `ci`, `refactor`, `test`.
-- `<issue-number>` — the driving GitHub issue id (e.g. `50`).
+- `<issue-number>` — the driving GitHub issue id (e.g. `50`). The driving issue is always a **task-level** issue: milestone epics and stories that only group sub-issues do not get one shared branch — each sub-issue gets its own session branch.
 - `<kebab-slug>` — issue title in kebab-case, shortened when long.
 
 Examples: `ci-50-github-actions-test-workflow` (issue #50 "CI: GitHub Actions test workflow"), `fix-52-fix-branch-naming` (issue #52).
 
-Sessions without a driving issue use a PascalCase topic name (e.g. `LiveCapture`). A continuation thread for the same task keeps the existing branch.
+Sessions without a driving issue use a PascalCase topic name (e.g. `LiveCapture`). A continuation thread for the same task keeps the existing branch. When the assigned scope (issue, story, epic) is done, the session stops — the next issue gets a new session and a new branch.
 
 ## Pushing
 
