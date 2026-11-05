@@ -20,7 +20,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
 
-  API_AUTH_TOKEN: z.string().min(1),
+  API_AUTH_TOKEN: z.string().min(16),
   DEV_PUUID: z.string().min(1).optional(),
   CORS_ORIGINS: csvList.prefault("http://localhost:4200"),
 

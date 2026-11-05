@@ -64,7 +64,7 @@ importers:
         specifier: 1.16.20
         version: 1.16.20
       '@types/express':
-        specifier: ^5.0.6
+        specifier: 5.0.6
         version: 5.0.6
       '@types/node':
         specifier: 26.6.5

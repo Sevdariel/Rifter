@@ -14,6 +14,7 @@ Rifter's NestJS backend. It holds the Riot API key, serves match data and analys
 - **Errors**: one global filter produces `{error: {code, message, fields?}}`. `ApiException` carries a stable `code`; framework exceptions map to generic per-status messages; unknown errors log the stack server-side and return `INTERNAL_ERROR`. No stack traces or internals reach clients.
 - **Validation**: zod schemas + `ZodValidationPipe` are the single DTO convention (no class-validator) — consistent with `packages/analysis`.
 - **Supply chain**: `minimumReleaseAge: 10080` in `pnpm-workspace.yaml` skips package releases younger than 7 days; asserted in `.devin/tests/config.test.mjs`.
+- **Compose exposure**: services publish on `127.0.0.1` only; the committed `rifter-dev-token` fallback is a local dev default, not a secret — set `API_AUTH_TOKEN` in `.env` to override.
 
 ## Layout
 
@@ -32,8 +33,9 @@ All config is env-driven and zod-validated at boot (`apps/api/.env.example` is t
 ## Edge cases
 
 - Guard order is throttle-then-authenticate: floods die before auth work.
-- A wrong-length token fails the timing-safe compare via length check, without a throw.
-- `DEV_PUUID` unset is not an auth failure — the token still gates access; identity resolution errors only when a handler actually needs the puuid.
+- Tokens are compared as SHA-256 digests so the timing-safe compare does not leak token length.
+- `DEV_PUUID` unset is not an auth failure — the token still gates access — but the resolver runs eagerly per authenticated request, so every protected route 500s until it is set.
+- Compose publishes every service on loopback only (`127.0.0.1:port`) — the container itself listens on `0.0.0.0` so the published port works.
 - `pnpm clean --lockfile` + `pnpm install` re-resolves the lockfile when the release-age policy flags fresh entries (see #76).
 
 ## Related issues

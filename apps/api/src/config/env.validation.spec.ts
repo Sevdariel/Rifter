@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { validateEnv } from "./env.validation";
 
-const BASE = { API_AUTH_TOKEN: "test-token" };
+const BASE = { API_AUTH_TOKEN: "test-token-123456" };
 
 describe("validateEnv", () => {
   it("applies defaults and coerces PORT", () => {
@@ -11,6 +11,7 @@ describe("validateEnv", () => {
     expect(env.PORT).toBe(3001);
     expect(env.HOST).toBe("127.0.0.1");
     expect(env.LOG_LEVEL).toBe("info");
+    expect(env.CORS_ORIGINS).toEqual(["http://localhost:4200"]);
     expect(env.OLLAMA_BASE_URL).toBe("http://localhost:11434");
     expect(env.OLLAMA_THINK).toBe(false);
     expect(env.JOB_RETENTION_DAYS).toBe(30);
@@ -20,8 +21,9 @@ describe("validateEnv", () => {
     expect(() => validateEnv({ ...BASE, PORT: "not-a-port" })).toThrow();
   });
 
-  it("requires API_AUTH_TOKEN", () => {
+  it("requires API_AUTH_TOKEN with a minimum length", () => {
     expect(() => validateEnv({})).toThrow();
+    expect(() => validateEnv({ API_AUTH_TOKEN: "short" })).toThrow();
   });
 
   it("splits CORS_ORIGINS into a trimmed list", () => {

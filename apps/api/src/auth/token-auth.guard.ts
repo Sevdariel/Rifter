@@ -1,23 +1,25 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Reflector } from "@nestjs/core";
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 import type { Env } from "../config/env.validation";
 import type { AuthenticatedRequest } from "./identity";
 import { IdentityResolver } from "./identity";
 import { IS_PUBLIC_KEY } from "./public.decorator";
 
+// Hashing first keeps the compare constant-time with respect to token length.
 function tokensEqual(provided: string, expected: string): boolean {
-  const a = Buffer.from(provided, "utf8");
-  const b = Buffer.from(expected, "utf8");
-  return a.length === b.length && timingSafeEqual(a, b);
+  const a = createHash("sha256").update(provided, "utf8").digest();
+  const b = createHash("sha256").update(expected, "utf8").digest();
+  return timingSafeEqual(a, b);
 }
 
 /**
  * Requires the X-Rifter-Token custom header on every non-public route.
- * Browsers cannot send it cross-origin without a preflight, which the CORS
- * allowlist rejects - this also blocks CSRF/DNS-rebinding posts to loopback.
+ * The token is the real auth check; the custom header adds CSRF protection
+ * because cross-origin browser sends need a preflight the CORS allowlist
+ * rejects (DNS rebinding is out of scope while the token is required).
  */
 @Injectable()
 export class TokenAuthGuard implements CanActivate {
