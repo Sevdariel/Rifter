@@ -4,8 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { Env } from "../config/env.validation";
 import { drizzleFactory } from "./drizzle.factory";
 
-const configWith = (url: string | undefined) =>
-  ({ get: () => url }) as unknown as ConfigService<Env, true>;
+const configWith = (url: string | undefined) => ({ get: () => url }) as unknown as ConfigService<Env, true>;
 
 describe("drizzleFactory", () => {
   it("returns null without DATABASE_URL", () => {

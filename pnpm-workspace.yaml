@@ -11,3 +11,9 @@ allowBuilds:
   esbuild: true
   lmdb: true
   msgpackr-extract: true
+  # Transitive deps of @testcontainers/postgresql whose install scripts we do
+  # not need (SSH tunneling, protobuf codegen). Listed so installs don't fail
+  # with ERR_PNPM_IGNORED_BUILDS.
+  cpu-features: false
+  protobufjs: false
+  ssh2: false

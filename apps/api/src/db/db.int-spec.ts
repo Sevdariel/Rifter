@@ -25,9 +25,7 @@ describe("db integration (testcontainers)", () => {
   });
 
   it("runs migrations cleanly against a fresh postgres", async () => {
-    await expect(
-      migrate(handle.db, { migrationsFolder: MIGRATIONS_FOLDER }),
-    ).resolves.not.toThrow();
+    await expect(migrate(handle.db, { migrationsFolder: MIGRATIONS_FOLDER })).resolves.not.toThrow();
   });
 
   it("answers queries through the pooled handle", async () => {

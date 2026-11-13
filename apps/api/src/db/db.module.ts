@@ -7,9 +7,7 @@ import { drizzleFactory } from "./drizzle.factory";
 
 @Global()
 @Module({
-  providers: [
-    { provide: DRIZZLE, inject: [ConfigService], useFactory: drizzleFactory },
-  ],
+  providers: [{ provide: DRIZZLE, inject: [ConfigService], useFactory: drizzleFactory }],
   exports: [DRIZZLE],
 })
 export class DbModule implements OnApplicationShutdown {
