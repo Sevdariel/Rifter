@@ -14,6 +14,9 @@ Follow repository-root `AGENTS.md` for scope, architecture, tests, and verificat
 - Organize code in NestJS modules by domain (`auth`, `matches`, `replays`, `analysis`, `clips`, …). Each module owns its controllers, services, DTOs, entities, and tests. Cross-module access goes through exported providers, not deep imports.
 - Controllers stay thin: validate input, delegate to services, map results. Validate every request DTO (class-validator or schema validation, whichever the project adopts) and enable whitelist/forbid-unknown behavior.
 - Strict TypeScript, no `any`. Report and moment contracts come from `packages/analysis`; do not redeclare them.
+- Returned values carry a named type and are returned via a typed variable (`const body: Foo = {...}; return body;`), not an inline literal.
+- Every method carries an explicit access modifier (`public`/`protected`/`private`), including constructors.
+- Types and interfaces used by a class live in their own file (`<feature>.types.ts`), not inline in controllers, services, or factories.
 - Express domain failures with typed exceptions carrying a stable error code, converted by one global exception filter. Never return raw error messages or stack traces to clients.
 - Use the Nest `Logger`, never `console.log`. Never log tokens, API keys, RSO codes, or raw `.rofl` contents.
 - Riot API access goes through one client service per Riot API family with rate-limit handling (`429` + `Retry-After`), regional routing, and caching of immutable data (finished matches). See `.devin/rules/riot-compliance.md`.

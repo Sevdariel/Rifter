@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AuthModule } from "./auth/auth.module";
 import { TokenAuthGuard } from "./auth/token-auth.guard";
 import { validateEnv } from "./config/env.validation";
+import { DbModule } from "./db/db.module";
 import { HealthModule } from "./health/health.module";
 import { SharedModule } from "./shared/shared.module";
 
@@ -17,6 +18,7 @@ import { SharedModule } from "./shared/shared.module";
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 300 }] }),
     SharedModule,
     AuthModule,
+    DbModule,
     HealthModule,
   ],
   // Throttle first, then authenticate.

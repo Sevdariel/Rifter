@@ -11,6 +11,7 @@ import type { Env } from "./config/env.validation";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableShutdownHooks();
   const config = app.get(ConfigService<Env, true>);
   configureApp(app, config);
   const host = config.get("HOST", { infer: true });
