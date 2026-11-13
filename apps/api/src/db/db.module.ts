@@ -1,7 +1,8 @@
 import { Global, Inject, Module, type OnApplicationShutdown } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { DRIZZLE, type DatabaseHandle } from "./database";
+import { DRIZZLE } from "./database";
+import type { DatabaseHandle } from "./db.types";
 import { drizzleFactory } from "./drizzle.factory";
 
 @Global()

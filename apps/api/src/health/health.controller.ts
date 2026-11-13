@@ -2,15 +2,9 @@ import { Controller, Get, Inject, Logger, Optional } from "@nestjs/common";
 import { sql } from "drizzle-orm";
 
 import { Public } from "../auth/public.decorator";
-import type { DatabaseHandle } from "../db/database";
 import { DRIZZLE } from "../db/database";
-
-type DbState = "up" | "down" | "disabled";
-
-interface HealthBody {
-  status: "ok";
-  db: DbState;
-}
+import type { DatabaseHandle } from "../db/db.types";
+import type { DbState, HealthBody } from "./health.types";
 
 @Controller("health")
 export class HealthController {

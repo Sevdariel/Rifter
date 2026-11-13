@@ -3,7 +3,8 @@ import { sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { createDatabase, type DatabaseHandle } from "./database";
+import { createDatabase } from "./database";
+import type { DatabaseHandle } from "./db.types";
 
 // Relative to apps/api: `pnpm --filter @rifter/api test:int` sets the cwd.
 const MIGRATIONS_FOLDER = "./drizzle";

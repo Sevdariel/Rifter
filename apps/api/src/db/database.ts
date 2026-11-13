@@ -1,14 +1,10 @@
-import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
+import type { DatabaseHandle } from "./db.types";
 import * as schema from "./schema";
 
 export const DRIZZLE = Symbol("DRIZZLE");
-
-export interface DatabaseHandle {
-  db: PostgresJsDatabase<typeof schema>;
-  client: postgres.Sql;
-}
 
 /**
  * Creates a pooled Drizzle handle. postgres.js connects lazily, so this never
