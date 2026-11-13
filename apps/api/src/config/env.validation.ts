@@ -26,6 +26,16 @@ const envSchema = z.object({
 
   DATABASE_URL: z.url().optional(),
   RIOT_API_KEY: z.string().min(1).optional(),
+  // Riot shard labels only — a route containing URL-significant chars would
+  // redirect requests (and the X-Riot-Token header) to a different host.
+  RIOT_REGIONAL_ROUTE: z
+    .string()
+    .regex(/^[a-z0-9]+$/)
+    .default("europe"),
+  RIOT_PLATFORM_ROUTE: z
+    .string()
+    .regex(/^[a-z0-9]+$/)
+    .default("euw1"),
 
   OLLAMA_BASE_URL: loopbackUrl("OLLAMA_BASE_URL").default("http://localhost:11434"),
   OLLAMA_THINK: z

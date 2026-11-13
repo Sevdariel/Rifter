@@ -22,13 +22,16 @@ Vertical slices under `src/`: a slice owns its controller, service, DTOs, table-
 
 - `auth/` — token guard, `IdentityResolver` seam, `@Public()`, `@Identity()`, dev resolver.
 - `shared/` — `ApiException`, `ApiExceptionFilter`, `ZodValidationPipe`.
-- `health/` — public liveness probe.
+- `health/` — public liveness probe (also reports `db` status).
 - `config/` — env validation (`src/config/env.validation.ts`).
-- Planned: `db/`, `matches/`, `analysis/`, `reports/`, `riot/`, `ollama/` (see issues under epic #17).
+- `db/` — global Drizzle/postgres.js pool + manual drizzle-kit migrations (`docs/api-database.md`).
+- `riot/` — Riot Games API client: sliding-window rate limits, `429`+`Retry-After`, regional/platform routing (`docs/matches.md`).
+- `matches/` — immutable Match-V5 cache (raw match + timeline JSONB), sync endpoints, normalize-on-read (`docs/matches.md`).
+- Planned: `analysis/`, `reports/`, `ollama/` (see issues under epic #17).
 
 ## Configuration
 
-All config is env-driven and zod-validated at boot (`apps/api/.env.example` is the reference). Notables: `API_AUTH_TOKEN` (required), `DEV_PUUID`, `CORS_ORIGINS`, `OLLAMA_BASE_URL` (loopback-only enforced), `OLLAMA_THINK`, `JOB_RETENTION_DAYS`, `SENTRY_DSN` (optional).
+All config is env-driven and zod-validated at boot (`apps/api/.env.example` is the reference). Notables: `API_AUTH_TOKEN` (required), `DEV_PUUID`, `DATABASE_URL`, `RIOT_API_KEY`, `RIOT_REGIONAL_ROUTE`/`RIOT_PLATFORM_ROUTE`, `CORS_ORIGINS`, `OLLAMA_BASE_URL` (loopback-only enforced), `OLLAMA_THINK`, `JOB_RETENTION_DAYS`, `SENTRY_DSN` (optional).
 
 ## Edge cases
 
