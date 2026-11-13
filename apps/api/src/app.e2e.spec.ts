@@ -38,14 +38,19 @@ describe("api e2e (security pipeline)", () => {
   let base: string;
   let priorToken: string | undefined;
   let priorPuuid: string | undefined;
+  let priorDatabaseUrl: string | undefined;
 
   beforeAll(async () => {
     // Env must be set before the AppModule import: ConfigModule.forRoot
-    // validates at module-evaluation time, not at boot.
+    // validates at module-evaluation time, not at boot. DATABASE_URL is
+    // pinned to a refused port so /health reports a deterministic "down"
+    // regardless of the developer's local .env.
     priorToken = process.env.API_AUTH_TOKEN;
     priorPuuid = process.env.DEV_PUUID;
+    priorDatabaseUrl = process.env.DATABASE_URL;
     process.env.API_AUTH_TOKEN = TOKEN;
     process.env.DEV_PUUID = "e2e-puuid";
+    process.env.DATABASE_URL = "postgres://127.0.0.1:1/rifter";
     const { AppModule } = await import("./app.module");
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
@@ -62,6 +67,7 @@ describe("api e2e (security pipeline)", () => {
     for (const [key, value] of [
       ["API_AUTH_TOKEN", priorToken],
       ["DEV_PUUID", priorPuuid],
+      ["DATABASE_URL", priorDatabaseUrl],
     ] as const) {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
@@ -71,7 +77,7 @@ describe("api e2e (security pipeline)", () => {
   it("serves public /health without a token", async () => {
     const res = await fetch(`${base}/health`);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ status: "ok" });
+    expect(await res.json()).toEqual({ status: "ok", db: "down" });
   });
 
   it("rejects a protected route without a token via the error contract", async () => {

@@ -36,6 +36,9 @@ pnpm -C apps/api start:dev # API dev server on :3000 (/health)
 pnpm -C apps/web start     # web dev server on :4200
 docker compose up          # full stack: db + api + web
 docker compose -f docker-compose.backend.yml up   # backend only, for frontend work
+pnpm --filter @rifter/api db:migrate    # apply DB migrations (explicit step)
+pnpm --filter @rifter/api test          # API unit + e2e tests, no Docker needed
+pnpm --filter @rifter/api test:int      # API integration tests (needs Docker)
 ```
 
 Valid once the scaffold lands (M0). A Riot development API key goes in `apps/api/.env` — never committed.

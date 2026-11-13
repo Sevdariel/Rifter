@@ -10,6 +10,21 @@ describe("HealthController", () => {
       imports: [HealthModule],
     }).compile();
     const controller = module.get(HealthController);
-    expect(controller.check()).toEqual({ status: "ok" });
+    await expect(controller.check()).resolves.toEqual({ status: "ok", db: "disabled" });
+  });
+
+  it("reports db up when the handle answers", async () => {
+    const handle = { db: { execute: async () => [] }, client: {} };
+    const controller = new HealthController(handle as never);
+    await expect(controller.check()).resolves.toEqual({ status: "ok", db: "up" });
+  });
+
+  it("reports db down when the handle rejects", async () => {
+    const handle = {
+      db: { execute: async () => Promise.reject(new Error("refused")) },
+      client: {},
+    };
+    const controller = new HealthController(handle as never);
+    await expect(controller.check()).resolves.toEqual({ status: "ok", db: "down" });
   });
 });
