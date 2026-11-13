@@ -17,5 +17,7 @@ export interface DatabaseHandle {
  */
 export function createDatabase(url: string): DatabaseHandle {
   const client = postgres(url, { max: 10 });
-  return { db: drizzle(client, { schema }), client };
+  const db = drizzle(client, { schema });
+  const handle: DatabaseHandle = { db, client };
+  return handle;
 }

@@ -5,9 +5,11 @@ import { Public } from "../auth/public.decorator";
 import type { DatabaseHandle } from "../db/database";
 import { DRIZZLE } from "../db/database";
 
+type DbState = "up" | "down" | "disabled";
+
 interface HealthBody {
   status: "ok";
-  db: "up" | "down" | "disabled";
+  db: DbState;
 }
 
 @Controller("health")
@@ -21,15 +23,21 @@ export class HealthController {
   @Public()
   @Get()
   async check(): Promise<HealthBody> {
-    if (!this.handle) return { status: "ok", db: "disabled" };
+    const db = await this.dbState();
+    const body: HealthBody = { status: "ok", db };
+    return body;
+  }
+
+  private async dbState(): Promise<DbState> {
+    if (!this.handle) return "disabled";
     try {
       await this.handle.db.execute(sql`select 1`);
-      return { status: "ok", db: "up" };
+      return "up";
     } catch (error) {
       this.logger.debug(
         `db health check failed: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return { status: "ok", db: "down" };
+      return "down";
     }
   }
 }
