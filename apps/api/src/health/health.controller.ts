@@ -16,13 +16,13 @@ interface HealthBody {
 export class HealthController {
   private readonly logger = new Logger(HealthController.name);
 
-  constructor(
+  public constructor(
     @Optional() @Inject(DRIZZLE) private readonly handle: DatabaseHandle | null,
   ) {}
 
   @Public()
   @Get()
-  async check(): Promise<HealthBody> {
+  public async check(): Promise<HealthBody> {
     const db = await this.dbState();
     const body: HealthBody = { status: "ok", db };
     return body;
