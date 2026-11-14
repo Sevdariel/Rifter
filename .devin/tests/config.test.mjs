@@ -568,3 +568,11 @@ test('telemetry hook is one cross-platform Node command that records metadata on
   assert.doesNotMatch(script, /record\.(prompt|tool_input|output)\b/);
   assert.equal(existsSync(resolve(root, '.devin/scripts/telemetry-hook.py')), false);
 });
+
+test('CI builds the workspace before testing it', () => {
+  const ci = read('.github/workflows/ci.yml');
+  const buildAt = ci.indexOf('pnpm -r build');
+  const testAt = ci.indexOf('pnpm -r test');
+  assert.ok(buildAt > -1 && testAt > -1, 'both workspace steps exist');
+  assert.ok(buildAt < testAt, 'workspace exports resolve to dist/, which only exists after build');
+});

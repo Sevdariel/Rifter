@@ -5,10 +5,10 @@ import { ApiException } from "./errors";
 
 /** Validates a request payload against a zod schema; rejects unknown-key/invalid bodies. */
 export class ZodValidationPipe implements PipeTransform {
-  constructor(private readonly schema: ZodType) {}
+  constructor(private readonly zodType: ZodType) {}
 
   transform(value: unknown): unknown {
-    const result = this.schema.safeParse(value);
+    const result = this.zodType.safeParse(value);
     if (!result.success) {
       const fields: Record<string, string[]> = {};
       for (const issue of result.error.issues) {

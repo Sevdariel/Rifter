@@ -40,6 +40,15 @@ describe("validateEnv", () => {
     }
   });
 
+  it("rejects Riot route values that would redirect the request host", () => {
+    for (const route of ["europe", "americas", "asia", "sea"]) {
+      expect(validateEnv({ ...BASE, RIOT_REGIONAL_ROUTE: route }).RIOT_REGIONAL_ROUTE).toBe(route);
+    }
+    for (const route of ["evil#", "a/b", "host:443", "a@b", "EU-WEST"]) {
+      expect(() => validateEnv({ ...BASE, RIOT_REGIONAL_ROUTE: route })).toThrow();
+    }
+  });
+
   it("parses OLLAMA_THINK only from explicit true", () => {
     expect(validateEnv({ ...BASE, OLLAMA_THINK: "true" }).OLLAMA_THINK).toBe(true);
     expect(validateEnv({ ...BASE, OLLAMA_THINK: "false" }).OLLAMA_THINK).toBe(false);

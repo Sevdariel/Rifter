@@ -29,8 +29,11 @@ services:
       HOST: 0.0.0.0
       # Dev default only; set API_AUTH_TOKEN in .env to override.
       API_AUTH_TOKEN: ${API_AUTH_TOKEN:-rifter-dev-token}
-      # Wired for the M2 database module; not consumed yet.
       DATABASE_URL: postgres://${POSTGRES_USER:-rifter}:${POSTGRES_PASSWORD:-rifter}@db:5432/${POSTGRES_DB:-rifter}
+      DEV_PUUID: ${DEV_PUUID:-}
+      RIOT_API_KEY: ${RIOT_API_KEY:-}
+      RIOT_REGIONAL_ROUTE: ${RIOT_REGIONAL_ROUTE:-europe}
+      RIOT_PLATFORM_ROUTE: ${RIOT_PLATFORM_ROUTE:-euw1}
     # Loopback-only publish: the API stays unreachable from LAN.
     ports:
       - '127.0.0.1:3000:3000'

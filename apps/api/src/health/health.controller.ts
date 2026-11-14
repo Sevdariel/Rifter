@@ -10,7 +10,7 @@ import type { DbState, HealthBody } from "./health.types";
 export class HealthController {
   private readonly logger = new Logger(HealthController.name);
 
-  public constructor(@Optional() @Inject(DRIZZLE) private readonly handle: DatabaseHandle | null) {}
+  public constructor(@Optional() @Inject(DRIZZLE) private readonly databaseHandle: DatabaseHandle | null) {}
 
   @Public()
   @Get()
@@ -21,9 +21,9 @@ export class HealthController {
   }
 
   private async dbState(): Promise<DbState> {
-    if (!this.handle) return "disabled";
+    if (!this.databaseHandle) return "disabled";
     try {
-      await this.handle.db.execute(sql`select 1`);
+      await this.databaseHandle.db.execute(sql`select 1`);
       return "up";
     } catch (error) {
       this.logger.debug(`db health check failed: ${error instanceof Error ? error.message : String(error)}`);

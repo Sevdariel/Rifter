@@ -14,6 +14,6 @@ export const DRIZZLE = Symbol("DRIZZLE");
 export function createDatabase(url: string): DatabaseHandle {
   const client = postgres(url, { max: 10 });
   const db = drizzle(client, { schema });
-  const handle: DatabaseHandle = { db, client };
-  return handle;
+  const databaseHandle: DatabaseHandle = { db, client };
+  return databaseHandle;
 }

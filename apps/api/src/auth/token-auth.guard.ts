@@ -25,8 +25,8 @@ function tokensEqual(provided: string, expected: string): boolean {
 export class TokenAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly config: ConfigService<Env, true>,
-    private readonly resolver: IdentityResolver,
+    private readonly configService: ConfigService<Env, true>,
+    private readonly identityResolver: IdentityResolver,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,13 +34,13 @@ export class TokenAuthGuard implements CanActivate {
       return true;
     }
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const expected = this.config.get("API_AUTH_TOKEN", { infer: true });
+    const expected = this.configService.get("API_AUTH_TOKEN", { infer: true });
     const header = request.headers["x-rifter-token"];
     const token = Array.isArray(header) ? header[0] : header;
     if (typeof token !== "string" || !tokensEqual(token, expected)) {
       throw new UnauthorizedException();
     }
-    request.identity = await this.resolver.resolve(request);
+    request.identity = await this.identityResolver.resolve(request);
     return true;
   }
 }
