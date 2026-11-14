@@ -23,7 +23,7 @@ const SYNC_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
 
 @Controller("matches")
 export class MatchesController {
-  public constructor(private readonly matches: MatchesService) {}
+  public constructor(private readonly matchesService: MatchesService) {}
 
   @Post("sync/one")
   @HttpCode(200)
@@ -32,7 +32,7 @@ export class MatchesController {
     @Identity() identity: PlayerIdentity,
     @Body(new ZodValidationPipe(syncOneBodySchema)) body: SyncOneBody,
   ): Promise<SyncOneResult> {
-    const result = await this.matches.syncOne(identity.puuid, body.matchId);
+    const result = await this.matchesService.syncOne(identity.puuid, body.matchId);
     return result;
   }
 
@@ -43,7 +43,7 @@ export class MatchesController {
     @Identity() identity: PlayerIdentity,
     @Body(new ZodValidationPipe(syncRecentBodySchema)) body: SyncRecentBody,
   ): Promise<SyncRecentResult> {
-    const result = await this.matches.syncRecent(identity.puuid, body.count);
+    const result = await this.matchesService.syncRecent(identity.puuid, body.count);
     return result;
   }
 
@@ -54,25 +54,25 @@ export class MatchesController {
     @Identity() identity: PlayerIdentity,
     @Body(new ZodValidationPipe(syncAllBodySchema)) body: SyncAllBody,
   ): SyncStatus {
-    const status = this.matches.syncAll(identity.puuid, body.from);
+    const status = this.matchesService.syncAll(identity.puuid, body.from);
     return status;
   }
 
   @Get("sync/status")
   public syncStatus(): SyncStatus {
-    const status = this.matches.syncStatus();
+    const status = this.matchesService.syncStatus();
     return status;
   }
 
   @Get()
   public list(@Identity() identity: PlayerIdentity): Promise<MatchSummary[]> {
-    const summaries = this.matches.list(identity.puuid);
+    const summaries = this.matchesService.list(identity.puuid);
     return summaries;
   }
 
   @Get(":matchId")
   public async get(@Identity() identity: PlayerIdentity, @Param("matchId") matchId: string): Promise<NormalizedMatch> {
-    const normalized = await this.matches.getNormalized(identity.puuid, matchId);
+    const normalized = await this.matchesService.getNormalized(identity.puuid, matchId);
     return normalized;
   }
 }

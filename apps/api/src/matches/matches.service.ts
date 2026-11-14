@@ -25,17 +25,17 @@ export class MatchesService {
   private readonly logger = new Logger(MatchesService.name);
 
   public constructor(
-    private readonly riot: RiotClientService,
-    private readonly repo: MatchesRepository,
-    private readonly status: SyncStatusService,
+    private readonly riotClientService: RiotClientService,
+    private readonly matchesRepository: MatchesRepository,
+    private readonly syncStatusService: SyncStatusService,
   ) {}
 
   public async syncOne(puuid: string, matchId: string): Promise<SyncOneResult> {
-    if (await this.repo.exists(puuid, matchId)) {
+    if (await this.matchesRepository.exists(puuid, matchId)) {
       const result: SyncOneResult = { matchId, stored: false, skipped: "ALREADY_CACHED" };
       return result;
     }
-    const match = await this.riot.getMatch(matchId);
+    const match = await this.riotClientService.getMatch(matchId);
     if (!match.info.participants.some((p) => p.puuid === puuid)) {
       const result: SyncOneResult = { matchId, stored: false, skipped: "NOT_OWNED" };
       return result;
@@ -50,7 +50,7 @@ export class MatchesService {
   }
 
   public async syncRecent(puuid: string, count: number): Promise<SyncRecentResult> {
-    const ids = await this.riot.listMatchIds(puuid, { count });
+    const ids = await this.riotClientService.listMatchIds(puuid, { count });
     const result: SyncRecentResult = {
       requested: count,
       stored: 0,
@@ -71,33 +71,33 @@ export class MatchesService {
   }
 
   public syncAll(puuid: string, from?: SyncFrom): SyncStatus {
-    const current = this.status.snapshot();
+    const current = this.syncStatusService.snapshot();
     if (current.running) {
       throw new ApiException("SYNC_IN_PROGRESS", "A full sync is already running", HttpStatus.CONFLICT);
     }
     const startTime = this.resolveFrom(from);
-    this.status.begin();
+    this.syncStatusService.begin();
     void this.runSyncAll(puuid, startTime).catch((error: unknown) => {
       const label = error instanceof ApiException ? error.code : error instanceof Error ? error.name : "unknown";
       this.logger.error(`sync-all aborted on ${label}`);
-      this.status.finish(label);
+      this.syncStatusService.finish(label);
     });
-    const status = this.status.snapshot();
+    const status = this.syncStatusService.snapshot();
     return status;
   }
 
   public syncStatus(): SyncStatus {
-    const status = this.status.snapshot();
+    const status = this.syncStatusService.snapshot();
     return status;
   }
 
   public async list(puuid: string): Promise<MatchSummary[]> {
-    const summaries = await this.repo.listSummaries(puuid);
+    const summaries = await this.matchesRepository.listSummaries(puuid);
     return summaries;
   }
 
   public async getNormalized(puuid: string, matchId: string): Promise<NormalizedMatch> {
-    const row = await this.repo.get(puuid, matchId);
+    const row = await this.matchesRepository.get(puuid, matchId);
     if (!row) {
       throw new ApiException("MATCH_NOT_CACHED", "Match is not cached", HttpStatus.NOT_FOUND);
     }
@@ -107,43 +107,43 @@ export class MatchesService {
 
   private async runSyncAll(puuid: string, startTime?: number): Promise<void> {
     for (let start = 0; ; start += LIST_PAGE_SIZE) {
-      const ids = await this.riot.listMatchIds(puuid, {
+      const ids = await this.riotClientService.listMatchIds(puuid, {
         start,
         count: LIST_PAGE_SIZE,
         startTime,
       });
-      this.status.count("listed", ids.length);
+      this.syncStatusService.count("listed", ids.length);
       for (const matchId of ids) {
         // Per-match failures (expired ids, upstream 5xx, malformed payloads)
         // are counted and skipped: one poison match must not wedge the run.
         try {
           const outcome = await this.syncIfUseful(puuid, matchId);
-          if (outcome !== "ALREADY_CACHED") this.status.count("fetched");
-          this.status.count(
+          if (outcome !== "ALREADY_CACHED") this.syncStatusService.count("fetched");
+          this.syncStatusService.count(
             outcome === "ALREADY_CACHED" ? "skippedCached" : outcome === "NON_SR_QUEUE" ? "skippedNonSr" : "stored",
           );
         } catch (error: unknown) {
           const label = error instanceof ApiException ? error.code : error instanceof Error ? error.name : "unknown";
           this.logger.warn(`sync-all skipped ${matchId} after ${label}`);
-          this.status.count("failed");
+          this.syncStatusService.count("failed");
         }
       }
       if (ids.length < LIST_PAGE_SIZE) break;
     }
-    this.status.finish();
+    this.syncStatusService.finish();
   }
 
   /** Returns the stored flag or the skip reason for a single id. */
   private async syncIfUseful(puuid: string, matchId: string): Promise<"ALREADY_CACHED" | "NON_SR_QUEUE" | "STORED"> {
-    if (await this.repo.exists(puuid, matchId)) return "ALREADY_CACHED";
-    const match = await this.riot.getMatch(matchId);
+    if (await this.matchesRepository.exists(puuid, matchId)) return "ALREADY_CACHED";
+    const match = await this.riotClientService.getMatch(matchId);
     if (!SR_QUEUE_IDS.has(match.info.queueId)) return "NON_SR_QUEUE";
     await this.fetchAndStore(puuid, match);
     return "STORED";
   }
 
   private async fetchAndStore(puuid: string, match: MatchV5Match): Promise<void> {
-    const timeline = await this.riot.getTimeline(match.metadata.matchId);
+    const timeline = await this.riotClientService.getTimeline(match.metadata.matchId);
     const info = (match as RawMatch).info;
     const row: NewMatchRow = {
       puuid,
@@ -154,7 +154,7 @@ export class MatchesService {
       match,
       timeline,
     };
-    await this.repo.insert(row);
+    await this.matchesRepository.insert(row);
   }
 
   private resolveFrom(from?: SyncFrom): number | undefined {

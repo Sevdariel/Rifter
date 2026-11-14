@@ -25,7 +25,7 @@ const fixture = JSON.parse(
 
 describe("matches integration (testcontainers)", () => {
   let container: Awaited<ReturnType<PostgreSqlContainer["start"]>>;
-  let handle: DatabaseHandle;
+  let databaseHandle: DatabaseHandle;
   let repo: MatchesRepository;
   let service: MatchesService;
 
@@ -39,14 +39,14 @@ describe("matches integration (testcontainers)", () => {
 
   beforeAll(async () => {
     container = await new PostgreSqlContainer("postgres:18-alpine").start();
-    handle = createDatabase(container.getConnectionUri());
-    await migrate(handle.db, { migrationsFolder: MIGRATIONS_FOLDER });
-    repo = new MatchesRepository(handle);
+    databaseHandle = createDatabase(container.getConnectionUri());
+    await migrate(databaseHandle.db, { migrationsFolder: MIGRATIONS_FOLDER });
+    repo = new MatchesRepository(databaseHandle);
     service = new MatchesService(riot, repo, new SyncStatusService());
   });
 
   afterAll(async () => {
-    await handle?.client.end();
+    await databaseHandle?.client.end();
     await container?.stop();
   });
 

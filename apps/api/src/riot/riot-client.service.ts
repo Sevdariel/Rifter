@@ -29,7 +29,7 @@ export class RiotClientService {
   private readonly logger = new Logger(RiotClientService.name);
   private readonly limiter = new RateLimiter(RATE_WINDOWS);
 
-  public constructor(private readonly config: ConfigService<Env, true>) {}
+  public constructor(private readonly configService: ConfigService<Env, true>) {}
 
   public async getAccountByRiotId(gameName: string, tagLine: string): Promise<RiotAccount> {
     const path = `/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
@@ -61,20 +61,20 @@ export class RiotClientService {
   }
 
   private async regional<T>(path: string): Promise<T> {
-    const route = this.config.get("RIOT_REGIONAL_ROUTE", { infer: true });
+    const route = this.configService.get("RIOT_REGIONAL_ROUTE", { infer: true });
     const body = await this.request<T>(`https://${route}.api.riotgames.com${path}`);
     return body;
   }
 
   /** Platform-shard call (euw1 etc.); reserved for future platform APIs. */
   public async platform<T>(path: string): Promise<T> {
-    const route = this.config.get("RIOT_PLATFORM_ROUTE", { infer: true });
+    const route = this.configService.get("RIOT_PLATFORM_ROUTE", { infer: true });
     const body = await this.request<T>(`https://${route}.api.riotgames.com${path}`);
     return body;
   }
 
   private async request<T>(url: string): Promise<T> {
-    const apiKey = this.config.get("RIOT_API_KEY", { infer: true });
+    const apiKey = this.configService.get("RIOT_API_KEY", { infer: true });
     if (!apiKey) {
       throw new ApiException("RIOT_NOT_CONFIGURED", "RIOT_API_KEY is not configured", HttpStatus.SERVICE_UNAVAILABLE);
     }

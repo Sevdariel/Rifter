@@ -10,7 +10,7 @@ import { matches, type MatchRow, type NewMatchRow } from "./schema";
 /** Persistence for the raw match cache. Callers get a null-handle failure. */
 @Injectable()
 export class MatchesRepository {
-  public constructor(@Inject(DRIZZLE) private readonly handle: DatabaseHandle | null) {}
+  public constructor(@Inject(DRIZZLE) private readonly databaseHandle: DatabaseHandle | null) {}
 
   public async exists(puuid: string, matchId: string): Promise<boolean> {
     const db = this.requireDb();
@@ -54,9 +54,9 @@ export class MatchesRepository {
   }
 
   private requireDb() {
-    if (!this.handle) {
+    if (!this.databaseHandle) {
       throw new ApiException("DB_NOT_CONFIGURED", "DATABASE_URL is not configured", HttpStatus.SERVICE_UNAVAILABLE);
     }
-    return this.handle.db;
+    return this.databaseHandle.db;
   }
 }

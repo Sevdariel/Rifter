@@ -13,11 +13,11 @@ export class RateLimiter {
   private readonly maxWindowMs: number;
 
   public constructor(
-    private readonly windows: readonly RateWindow[],
+    private readonly rateWindows: readonly RateWindow[],
     private readonly now: () => number = Date.now,
     private readonly sleep: Sleep = defaultSleep,
   ) {
-    this.maxWindowMs = Math.max(...windows.map((w) => w.windowMs));
+    this.maxWindowMs = Math.max(...this.rateWindows.map((w) => w.windowMs));
   }
 
   public async acquire(): Promise<void> {
@@ -37,7 +37,7 @@ export class RateLimiter {
       this.stamps.shift();
     }
     let wait = 0;
-    for (const { limit, windowMs } of this.windows) {
+    for (const { limit, windowMs } of this.rateWindows) {
       const boundary = now - windowMs;
       const inWindow = this.stamps.filter((s) => s > boundary).length;
       if (inWindow >= limit) {

@@ -8,12 +8,12 @@ import { IdentityResolver, type PlayerIdentity } from "./identity";
 /** Development identity: every authenticated request maps to DEV_PUUID. */
 @Injectable()
 export class DevIdentityResolver extends IdentityResolver {
-  constructor(private readonly config: ConfigService<Env, true>) {
+  constructor(private readonly configService: ConfigService<Env, true>) {
     super();
   }
 
   async resolve(): Promise<PlayerIdentity> {
-    const puuid = this.config.get("DEV_PUUID", { infer: true });
+    const puuid = this.configService.get("DEV_PUUID", { infer: true });
     if (!puuid) {
       throw new ApiException(
         "IDENTITY_UNAVAILABLE",

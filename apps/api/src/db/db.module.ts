@@ -11,9 +11,9 @@ import { drizzleFactory } from "./drizzle.factory";
   exports: [DRIZZLE],
 })
 export class DbModule implements OnApplicationShutdown {
-  public constructor(@Inject(DRIZZLE) private readonly handle: DatabaseHandle | null) {}
+  public constructor(@Inject(DRIZZLE) private readonly databaseHandle: DatabaseHandle | null) {}
 
   public async onApplicationShutdown(): Promise<void> {
-    await this.handle?.client.end();
+    await this.databaseHandle?.client.end();
   }
 }

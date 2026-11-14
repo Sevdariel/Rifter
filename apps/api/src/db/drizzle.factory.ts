@@ -11,6 +11,6 @@ import type { DatabaseHandle } from "./db.types";
  */
 export function drizzleFactory(config: ConfigService<Env, true>): DatabaseHandle | null {
   const url = config.get("DATABASE_URL", { infer: true });
-  const handle: DatabaseHandle | null = url ? createDatabase(url) : null;
-  return handle;
+  const databaseHandle: DatabaseHandle | null = url ? createDatabase(url) : null;
+  return databaseHandle;
 }
