@@ -1,4 +1,6 @@
 import type { ConfigService } from "@nestjs/config";
+
+import type { MetricsService } from "../observability/metrics.service";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Env } from "../config/env.validation";
@@ -11,11 +13,21 @@ const ENV: Partial<Env> = {
   RIOT_PLATFORM_ROUTE: "euw1",
 };
 
-function makeService(): RiotClientService {
+function makeMetricsStub(): MetricsService {
+  const metrics = {
+    riotRequests: { inc: vi.fn() },
+    riotRateLimited: { inc: vi.fn() },
+  };
+  return metrics as unknown as MetricsService;
+}
+
+function makeService(): { client: RiotClientService; metrics: MetricsService } {
   const config = {
     get: (key: keyof Env) => ENV[key],
   } as unknown as ConfigService<Env, true>;
-  return new RiotClientService(config);
+  const metrics = makeMetricsStub();
+  const client = new RiotClientService(config, metrics);
+  return { client, metrics };
 }
 
 function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}): Response {
@@ -33,9 +45,10 @@ describe("RiotClientService", () => {
   it("sends the key in X-Riot-Token on the regional host", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, ["EUW1_1"]));
     vi.stubGlobal("fetch", fetchMock);
-    const client = makeService();
+    const { client, metrics } = makeService();
     const ids = await client.listMatchIds("puuid-a", { count: 5, startTime: 100 });
     expect(ids).toEqual(["EUW1_1"]);
+    expect(metrics.riotRequests.inc).toHaveBeenCalledWith({ endpoint: "match-v5.ids", status: "200" });
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe(
       "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/puuid-a/ids?count=5&startTime=100",
@@ -45,13 +58,13 @@ describe("RiotClientService", () => {
 
   it("maps 401/403 to RIOT_UNAUTHORIZED", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(401, {})));
-    const client = makeService();
+    const { client } = makeService();
     await expect(client.getMatch("X")).rejects.toMatchObject({ code: "RIOT_UNAUTHORIZED" });
   });
 
   it("maps 404 to RIOT_NOT_FOUND", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(404, {})));
-    const client = makeService();
+    const { client } = makeService();
     await expect(client.getMatch("X")).rejects.toMatchObject({ code: "RIOT_NOT_FOUND" });
   });
 
@@ -61,23 +74,33 @@ describe("RiotClientService", () => {
       .mockResolvedValueOnce(jsonResponse(429, {}, { "retry-after": "0" }))
       .mockResolvedValueOnce(jsonResponse(200, { metadata: { matchId: "M" }, info: {} }));
     vi.stubGlobal("fetch", fetchMock);
-    const client = makeService();
+    const { client, metrics } = makeService();
     const match = await client.getMatch("M");
     expect(match.metadata.matchId).toBe("M");
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(metrics.riotRateLimited.inc).toHaveBeenCalledWith({ endpoint: "match-v5.match" });
+    expect(metrics.riotRequests.inc).toHaveBeenNthCalledWith(1, { endpoint: "match-v5.match", status: "429" });
+    expect(metrics.riotRequests.inc).toHaveBeenNthCalledWith(2, { endpoint: "match-v5.match", status: "200" });
+  });
+
+  it("counts a fetch rejection as a network_error", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("socket hangup")));
+    const { client, metrics } = makeService();
+    await expect(client.getMatch("M")).rejects.toThrow();
+    expect(metrics.riotRequests.inc).toHaveBeenCalledWith({ endpoint: "match-v5.match", status: "network_error" });
   });
 
   it("exhausts retries into RIOT_RATE_LIMITED", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(429, {}, { "retry-after": "0" }));
     vi.stubGlobal("fetch", fetchMock);
-    const client = makeService();
+    const { client } = makeService();
     await expect(client.getMatch("M")).rejects.toMatchObject({ code: "RIOT_RATE_LIMITED" });
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it("fails RIOT_NOT_CONFIGURED without a key", async () => {
     const config = { get: () => undefined } as unknown as ConfigService<Env, true>;
-    const client = new RiotClientService(config);
+    const client = new RiotClientService(config, makeMetricsStub());
     await expect(client.getMatch("M")).rejects.toBeInstanceOf(ApiException);
   });
 });

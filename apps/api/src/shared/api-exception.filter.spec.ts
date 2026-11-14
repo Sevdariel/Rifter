@@ -1,8 +1,11 @@
 import { ArgumentsHost, HttpException, HttpStatus } from "@nestjs/common";
+import { captureException } from "@sentry/nestjs";
 import { describe, expect, it, vi } from "vitest";
 
 import { ApiExceptionFilter } from "./api-exception.filter";
 import { ApiException, type ApiErrorBody } from "./errors";
+
+vi.mock("@sentry/nestjs", () => ({ captureException: vi.fn() }));
 
 function fakeHost() {
   const json = vi.fn();
@@ -33,11 +36,29 @@ describe("ApiExceptionFilter", () => {
     expect(body()).toEqual({ error: { code: "UNAUTHORIZED", message: "Authentication required" } });
   });
 
-  it("hides internals on unknown errors", () => {
+  it("hides internals on unknown errors and reports them to Sentry", () => {
     const { host, status, body } = fakeHost();
+    vi.mocked(captureException).mockClear();
     filter.catch(new Error("db connection string leaked here"), host);
     expect(status).toHaveBeenCalledWith(500);
     expect(body()).toEqual({ error: { code: "INTERNAL_ERROR", message: "Internal server error" } });
     expect(JSON.stringify(body())).not.toContain("db connection");
+    expect(captureException).toHaveBeenCalledOnce();
+  });
+
+  it("does not report expected client errors to Sentry", () => {
+    vi.mocked(captureException).mockClear();
+    filter.catch(ApiException.validation({ name: ["Required"] }), fakeHost().host);
+    filter.catch(new HttpException("nope", HttpStatus.UNAUTHORIZED), fakeHost().host);
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it("reports ApiExceptions with a 5xx status but still renders the contract", () => {
+    const { host, status, body } = fakeHost();
+    vi.mocked(captureException).mockClear();
+    filter.catch(new ApiException("RIOT_UPSTREAM", "Riot API responded 500", HttpStatus.BAD_GATEWAY), host);
+    expect(status).toHaveBeenCalledWith(502);
+    expect(body()).toEqual({ error: { code: "RIOT_UPSTREAM", message: "Riot API responded 500" } });
+    expect(captureException).toHaveBeenCalledOnce();
   });
 });

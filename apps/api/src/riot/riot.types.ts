@@ -5,6 +5,9 @@ export interface RiotAccount {
   tagLine: string;
 }
 
+/** Closed set of metric labels — one per Riot endpoint family we call. */
+export type RiotEndpoint = "account-v1" | "match-v5.ids" | "match-v5.match" | "match-v5.timeline" | "platform";
+
 /** A sliding-window rate cap, e.g. `{limit: 100, windowMs: 120_000}`. */
 export interface RateWindow {
   limit: number;

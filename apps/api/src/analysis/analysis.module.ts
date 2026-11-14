@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { MatchesModule } from "../matches/matches.module";
+import { ObservabilityModule } from "../observability/observability.module";
 import { OllamaModule } from "../ollama/ollama.module";
 import { ReportsModule } from "../reports/reports.module";
 import { AnalysisJobsRepository } from "./analysis-jobs.repository";
@@ -10,7 +11,7 @@ import { AnalysisController } from "./analysis.controller";
 import { AnalysisService } from "./analysis.service";
 
 @Module({
-  imports: [MatchesModule, OllamaModule, ReportsModule],
+  imports: [MatchesModule, ObservabilityModule, OllamaModule, ReportsModule],
   controllers: [AnalysisController],
   providers: [AnalysisJobsRepository, AnalysisJobsService, AnalysisService, AnalysisWorkerService],
   exports: [AnalysisJobsService],

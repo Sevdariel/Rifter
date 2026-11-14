@@ -11,6 +11,7 @@ import {
 
 import type { Env } from "../config/env.validation";
 import { MatchesService } from "../matches/matches.service";
+import { MetricsService } from "../observability/metrics.service";
 import { OllamaService } from "../ollama/ollama.service";
 import { ReportsService } from "../reports/reports.service";
 import type { RecordReportInput } from "../reports/reports.types";
@@ -40,6 +41,7 @@ export class AnalysisWorkerService implements OnModuleInit, OnApplicationShutdow
     private readonly matchesService: MatchesService,
     private readonly ollamaService: OllamaService,
     private readonly reportsService: ReportsService,
+    private readonly metricsService: MetricsService,
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
@@ -134,12 +136,15 @@ export class AnalysisWorkerService implements OnModuleInit, OnApplicationShutdow
         retries: result.retries,
       };
       await this.analysisJobsService.markSucceeded(job.id, completeInput);
+      this.metricsService.analysisJobs.inc({ status: "succeeded" });
+      this.metricsService.analysisJobDuration.observe(result.timings.totalMs / 1000);
       this.logger.log(`job ${job.id} (${job.matchId}) succeeded in ${result.timings.totalMs} ms`);
     } catch (error: unknown) {
       const message = (error instanceof Error ? error.message : String(error)).slice(0, MAX_ERROR_LEN);
       this.logger.warn(`job ${job.id} (${job.matchId}) failed: ${message}`);
       try {
         await this.analysisJobsService.markFailed(job.id, message);
+        this.metricsService.analysisJobs.inc({ status: "failed" });
       } catch (markError: unknown) {
         const label = markError instanceof Error ? markError.message : String(markError);
         this.logger.error(`markFailed for job ${job.id} threw: ${label}`);

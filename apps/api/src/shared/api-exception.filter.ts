@@ -1,4 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
+import * as Sentry from "@sentry/nestjs";
 import type { Response } from "express";
 
 import { ApiException, type ApiErrorBody } from "./errors";
@@ -20,10 +21,16 @@ const STATUS_FALLBACK: Record<number, { code: string; message: string }> = {
 export class ApiExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(ApiExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost): void {
+  public catch(exception: unknown, host: ArgumentsHost): void {
     const res = host.switchToHttp().getResponse<Response>();
 
     if (exception instanceof ApiException) {
+      // ApiExceptions with a 5xx status are genuine failures (Riot outage,
+      // missing config) — they still render the contract, but also report.
+      if (exception.getStatus() >= HttpStatus.INTERNAL_SERVER_ERROR) {
+        Sentry.captureException(exception);
+        this.logger.error(`${exception.code}: ${exception.message}`, exception.stack);
+      }
       const body: ApiErrorBody = {
         error: {
           code: exception.code,
@@ -39,12 +46,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
       const status = exception.getStatus();
       const mapped = STATUS_FALLBACK[status] ?? { code: "REQUEST_FAILED", message: "Request failed" };
       if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+        Sentry.captureException(exception);
         this.logger.error(`HTTP ${status}: ${exception.message}`, exception.stack);
       }
       res.status(status).json({ error: mapped } satisfies ApiErrorBody);
       return;
     }
 
+    Sentry.captureException(exception);
     this.logger.error("Unhandled exception", exception instanceof Error ? exception.stack : String(exception));
     res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -80,6 +80,17 @@ describe("api e2e (security pipeline)", () => {
     expect(await res.json()).toEqual({ status: "ok", db: "down" });
   });
 
+  it("serves public /metrics without a token in the exposition format", async () => {
+    const res = await fetch(`${base}/metrics`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/plain");
+    const body = await res.text();
+    expect(body).toContain("rifter_http_request_duration_seconds");
+    expect(body).toContain("rifter_riot_api_requests_total");
+    // Aggregate only — no per-player identifiers in the label set.
+    expect(body).not.toContain("puuid");
+  });
+
   it("rejects a protected route without a token via the error contract", async () => {
     const res = await fetch(`${base}/probe`);
     expect(res.status).toBe(401);
