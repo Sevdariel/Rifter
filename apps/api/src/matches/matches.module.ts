@@ -10,5 +10,6 @@ import { SyncStatusService } from "./sync-status.service";
   imports: [RiotModule],
   controllers: [MatchesController],
   providers: [MatchesService, MatchesRepository, SyncStatusService],
+  exports: [MatchesService],
 })
 export class MatchesModule {}

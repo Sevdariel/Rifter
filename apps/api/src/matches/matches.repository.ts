@@ -1,9 +1,9 @@
-import { HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { DRIZZLE } from "../db/database";
+import { requireDb } from "../db/require-db";
 import type { DatabaseHandle } from "../db/db.types";
-import { ApiException } from "../shared/errors";
 import type { MatchSummary } from "./matches.types";
 import { matches, type MatchRow, type NewMatchRow } from "./schema";
 
@@ -13,7 +13,7 @@ export class MatchesRepository {
   public constructor(@Inject(DRIZZLE) private readonly databaseHandle: DatabaseHandle | null) {}
 
   public async exists(puuid: string, matchId: string): Promise<boolean> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const rows = await db
       .select({ matchId: matches.matchId })
       .from(matches)
@@ -23,12 +23,12 @@ export class MatchesRepository {
   }
 
   public async insert(row: NewMatchRow): Promise<void> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     await db.insert(matches).values(row).onConflictDoNothing();
   }
 
   public async listSummaries(puuid: string): Promise<MatchSummary[]> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const rows = await db
       .select({
         matchId: matches.matchId,
@@ -44,19 +44,10 @@ export class MatchesRepository {
   }
 
   public async get(puuid: string, matchId: string): Promise<MatchRow | undefined> {
-    const db = this.requireDb();
-    const rows = await db
-      .select()
-      .from(matches)
-      .where(and(eq(matches.puuid, puuid), eq(matches.matchId, matchId)))
-      .limit(1);
-    return rows[0];
-  }
-
-  private requireDb() {
-    if (!this.databaseHandle) {
-      throw new ApiException("DB_NOT_CONFIGURED", "DATABASE_URL is not configured", HttpStatus.SERVICE_UNAVAILABLE);
-    }
-    return this.databaseHandle.db;
+    const db = requireDb(this.databaseHandle);
+    const row = await db.query.matches.findFirst({
+      where: and(eq(matches.puuid, puuid), eq(matches.matchId, matchId)),
+    });
+    return row;
   }
 }
