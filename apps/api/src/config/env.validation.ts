@@ -38,10 +38,20 @@ const envSchema = z.object({
     .default("euw1"),
 
   OLLAMA_BASE_URL: loopbackUrl("OLLAMA_BASE_URL").default("http://localhost:11434"),
+  // Forced model tag — bypasses VRAM tier selection when set.
+  OLLAMA_MODEL: z.string().min(1).optional(),
+  // Forced free-VRAM figure (MiB) — probe override for hosts without nvidia-smi.
+  OLLAMA_FREE_VRAM_MB: z.coerce.number().int().min(0).optional(),
   OLLAMA_THINK: z
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
+  ANALYSIS_LOCALE: z.enum(["pl", "en"]).default("pl"),
+  ANALYSIS_WORKER_ENABLED: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((value) => value === "true"),
+  ANALYSIS_WORKER_POLL_MS: z.coerce.number().int().min(1000).default(5000),
   JOB_RETENTION_DAYS: z.coerce.number().int().min(1).default(30),
   SENTRY_DSN: z.url().optional(),
 });

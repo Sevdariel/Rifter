@@ -53,7 +53,7 @@ export class MatchesRepository {
     return rows[0];
   }
 
-  private requireDb() {
+  private requireDb(): DatabaseHandle["db"] {
     if (!this.databaseHandle) {
       throw new ApiException("DB_NOT_CONFIGURED", "DATABASE_URL is not configured", HttpStatus.SERVICE_UNAVAILABLE);
     }

@@ -1,3 +1,4 @@
+import type { AnalysisJobView } from "./analysis.types";
 import type { AnalysisJobRow } from "./schema";
 
 /** Postgres returns snake_case for raw RETURNING rows; map to the drizzle row shape. */
@@ -22,4 +23,25 @@ export function toJobRow(row: Record<string, unknown>): AnalysisJobRow {
     finishedAt: (row.finished_at as Date | null) ?? null,
   };
   return job;
+}
+
+/** Public wire shape — drops puuid (already scoped) and the captured prompt/report. */
+export function toJobView(row: AnalysisJobRow): AnalysisJobView {
+  const view: AnalysisJobView = {
+    id: row.id,
+    matchId: row.matchId,
+    status: row.status,
+    contractVersion: row.contractVersion,
+    promptVersion: row.promptVersion,
+    modelDigest: row.modelDigest,
+    error: row.error,
+    tokenUsage: row.tokenUsage,
+    timings: row.timings,
+    retries: row.retries,
+    attempts: row.attempts,
+    createdAt: row.createdAt,
+    claimedAt: row.claimedAt,
+    finishedAt: row.finishedAt,
+  };
+  return view;
 }

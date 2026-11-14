@@ -121,6 +121,26 @@ describe("analysis jobs integration (testcontainers)", () => {
     expect(reclaimed?.attempts).toBe(2);
   });
 
+  it("re-enqueueing a failed job resets it to queued", async () => {
+    const { job } = await service.enqueue({ ...enqueueInput, promptVersion: 8 });
+    await service.claim();
+    await service.markFailed(job.id, "ollama down");
+
+    const retried = await service.enqueue({ ...enqueueInput, promptVersion: 8 });
+    expect(retried.created).toBe(false);
+    expect(retried.job.id).toBe(job.id);
+    expect(retried.job.status).toBe("queued");
+    expect(retried.job.error).toBeNull();
+    expect(retried.job.claimedAt).toBeNull();
+    expect(retried.job.finishedAt).toBeNull();
+
+    // Non-terminal rows are untouched by re-enqueue.
+    const reclaimed = await service.claim();
+    expect(reclaimed?.id).toBe(job.id);
+    const dup = await service.enqueue({ ...enqueueInput, promptVersion: 8 });
+    expect(dup.job.status).toBe("running");
+  });
+
   it("rejects jobs for matches that are not cached (FK)", async () => {
     const repository = new AnalysisJobsRepository(databaseHandle);
     await expect(

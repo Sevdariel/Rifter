@@ -48,6 +48,8 @@ export interface AnalyzeTimings {
 
 export interface AnalysisResult {
   report: AnalysisReport;
+  /** The built prompt sent to the model — captured for `analysis_jobs` observability. */
+  prompt: string;
   usage: OllamaUsage;
   retries: number;
   timings: AnalyzeTimings;
@@ -124,6 +126,7 @@ export async function analyzeMatch(input: AnalyzeMatchInput, deps: AnalyzeMatchD
     if (result.ok) {
       return {
         report: result.report,
+        prompt: built.prompt,
         usage,
         retries,
         timings: {

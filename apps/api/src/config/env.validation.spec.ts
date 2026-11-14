@@ -14,6 +14,9 @@ describe("validateEnv", () => {
     expect(env.CORS_ORIGINS).toEqual(["http://localhost:4200"]);
     expect(env.OLLAMA_BASE_URL).toBe("http://localhost:11434");
     expect(env.OLLAMA_THINK).toBe(false);
+    expect(env.ANALYSIS_LOCALE).toBe("pl");
+    expect(env.ANALYSIS_WORKER_ENABLED).toBe(true);
+    expect(env.ANALYSIS_WORKER_POLL_MS).toBe(5000);
     expect(env.JOB_RETENTION_DAYS).toBe(30);
   });
 
@@ -53,5 +56,25 @@ describe("validateEnv", () => {
     expect(validateEnv({ ...BASE, OLLAMA_THINK: "true" }).OLLAMA_THINK).toBe(true);
     expect(validateEnv({ ...BASE, OLLAMA_THINK: "false" }).OLLAMA_THINK).toBe(false);
     expect(() => validateEnv({ ...BASE, OLLAMA_THINK: "yes" })).toThrow();
+  });
+
+  it("validates the analysis worker knobs", () => {
+    const env = validateEnv({
+      ...BASE,
+      OLLAMA_MODEL: "custom:7b",
+      OLLAMA_FREE_VRAM_MB: "9000",
+      ANALYSIS_LOCALE: "en",
+      ANALYSIS_WORKER_ENABLED: "false",
+      ANALYSIS_WORKER_POLL_MS: "2000",
+    });
+    expect(env.OLLAMA_MODEL).toBe("custom:7b");
+    expect(env.OLLAMA_FREE_VRAM_MB).toBe(9000);
+    expect(env.ANALYSIS_LOCALE).toBe("en");
+    expect(env.ANALYSIS_WORKER_ENABLED).toBe(false);
+    expect(env.ANALYSIS_WORKER_POLL_MS).toBe(2000);
+
+    expect(() => validateEnv({ ...BASE, OLLAMA_FREE_VRAM_MB: "-1" })).toThrow();
+    expect(() => validateEnv({ ...BASE, ANALYSIS_LOCALE: "de" })).toThrow();
+    expect(() => validateEnv({ ...BASE, ANALYSIS_WORKER_POLL_MS: "500" })).toThrow();
   });
 });

@@ -48,6 +48,29 @@ export class AnalysisJobsRepository {
       // reaching this means a caller-supplied PK collided instead.
       throw new ApiException("JOB_DEDUPE_CONFLICT", "job insert conflicted on a non-dedupe key", HttpStatus.CONFLICT);
     }
+    if (existing[0].status === "failed") {
+      // A failed job is not terminal: re-enqueueing resets it to queued so a
+      // transient failure (Ollama down, pull timeout) is retryable. The status
+      // predicate keeps the update atomic — a claim or sweep landing between
+      // the SELECT above and this UPDATE must not be clobbered.
+      const requeued = await db
+        .update(analysisJobs)
+        .set({ status: "queued", error: null, claimedAt: null, finishedAt: null })
+        .where(and(eq(analysisJobs.id, existing[0].id), eq(analysisJobs.status, "failed")))
+        .returning();
+      if (requeued[0]) {
+        const result = { job: requeued[0], created: false };
+        return result;
+      }
+      // Lost the race: re-read the row — it is now queued/running/succeeded,
+      // or gone (swept). Either way the current state is the honest answer.
+      const current = await db.select().from(analysisJobs).where(eq(analysisJobs.id, existing[0].id)).limit(1);
+      if (!current[0]) {
+        throw new ApiException("JOB_NOT_FOUND", "Job was deleted between dedupe and requeue", HttpStatus.NOT_FOUND);
+      }
+      const result = { job: current[0], created: false };
+      return result;
+    }
     const result = { job: existing[0], created: false };
     return result;
   }
@@ -153,7 +176,7 @@ export class AnalysisJobsRepository {
     return count;
   }
 
-  private requireDb() {
+  private requireDb(): DatabaseHandle["db"] {
     if (!this.databaseHandle) {
       throw new ApiException("DB_NOT_CONFIGURED", "DATABASE_URL is not configured", HttpStatus.SERVICE_UNAVAILABLE);
     }

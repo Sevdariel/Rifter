@@ -75,13 +75,15 @@ export class AnalysisJobsService {
 
   private async maybeSweep(): Promise<void> {
     if (Date.now() - this.lastSweepAt < SWEEP_INTERVAL_MS) return;
+    // Attempt-time stamp: a persistently failing sweep retries hourly, not
+    // on every poll tick.
+    this.lastSweepAt = Date.now();
     try {
       const days = this.configService.get("JOB_RETENTION_DAYS", { infer: true });
       const deleted = await this.analysisJobsRepository.sweepRetention(days);
       if (deleted > 0) {
         this.logger.log(`retention sweep deleted ${deleted} terminal job(s)`);
       }
-      this.lastSweepAt = Date.now();
     } catch (error: unknown) {
       const label = error instanceof Error ? error.name : "unknown";
       // A failed sweep must not break claims; retry lands on the next tick.

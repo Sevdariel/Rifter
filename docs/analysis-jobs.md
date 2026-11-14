@@ -8,10 +8,12 @@ LLM pipeline.
 
 ## Shape
 
-- State machine: `queued → running → succeeded | failed` (`status` enum).
+- State machine: `queued → running → succeeded | failed`, plus a retry edge
+  `failed → queued` when the job is re-enqueued (`status` enum).
 - Idempotent dedupe: unique `(puuid, matchId, contractVersion, promptVersion)`
   — re-requesting the same analysis returns the existing job (`created:false`)
-  instead of a duplicate.
+  instead of a duplicate; a `failed` row is reset to `queued` atomically
+  (status-guarded UPDATE — a racing claim or sweep is never clobbered).
 - Claim: single `UPDATE ... RETURNING` with `FOR UPDATE SKIP LOCKED` — atomic,
   so concurrent workers can never take the same row.
 - Crash recovery: a row claimed longer than `STALE_CLAIM_MS` (1 h) is
@@ -31,8 +33,9 @@ LLM pipeline.
 `AnalysisJobsService` is internal — the worker drives `enqueue → claim →
 markSucceeded | markFailed`; status reads go through `getForPuuid` /
 `listByPuuid` (puuid-scoped, no IDOR). `mark*` only transitions `running`
-rows — anything else throws `JOB_NOT_RUNNING` (409). HTTP endpoints for
-enqueue/status land with the analysis module in #20.
+rows — anything else throws `JOB_NOT_RUNNING` (409). HTTP endpoints
+(`POST /analysis/jobs`, `GET /analysis/jobs[/:id]`) land with the analysis
+module in #20 — see `docs/analysis-worker.md`.
 
 ## Notes
 

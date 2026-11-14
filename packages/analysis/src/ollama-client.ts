@@ -30,6 +30,11 @@ export interface OllamaClientConfig {
   maxPromptChars?: number;
   temperature?: number;
   timeoutMs?: number;
+  /**
+   * Chain-of-thought capture for debug runs (`OLLAMA_THINK`). Off by default:
+   * thinking burns the output budget on hidden reasoning instead of the answer.
+   */
+  think?: boolean;
   /** Injectable for tests; defaults to globalThis.fetch. */
   fetchImpl?: typeof fetch;
 }
@@ -87,8 +92,9 @@ export async function ollamaGenerateJson(
         stream: false,
         keep_alive: 0,
         // Thinking models would burn the output budget on hidden reasoning
-        // and emit no final answer; constrained decoding needs it off.
-        think: false,
+        // and emit no final answer; constrained decoding needs it off unless
+        // the operator explicitly enables capture for a debug run.
+        think: cfg.think ?? false,
         options: { temperature: cfg.temperature, num_predict: cfg.numPredict },
       }),
     });

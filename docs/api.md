@@ -27,12 +27,13 @@ Vertical slices under `src/`: a slice owns its controller, service, DTOs, table-
 - `db/` — global Drizzle/postgres.js pool + manual drizzle-kit migrations (`docs/api-database.md`).
 - `riot/` — Riot Games API client: sliding-window rate limits, `429`+`Retry-After`, regional/platform routing (`docs/matches.md`).
 - `matches/` — immutable Match-V5 cache (raw match + timeline JSONB), sync endpoints, normalize-on-read (`docs/matches.md`).
-- `analysis/` — `analysis_jobs` queue table + service (dedupe, SKIP LOCKED claim, retention sweep); the worker and endpoints land in #20 (`docs/analysis-jobs.md`).
-- Planned: `reports/`, `ollama/` (see issues under epic #17).
+- `analysis/` — `analysis_jobs` queue + worker + endpoints: `POST /analysis/jobs`, `GET /analysis/jobs[/:id]` (`docs/analysis-jobs.md`, `docs/analysis-worker.md`).
+- `ollama/` — local Ollama lifecycle: detect/attach, VRAM-tier model selection, manifest-only pull, digest verify (`docs/analysis-worker.md`).
+- Planned: `reports/` (see issues under epic #17).
 
 ## Configuration
 
-All config is env-driven and zod-validated at boot (`apps/api/.env.example` is the reference). Notables: `API_AUTH_TOKEN` (required), `DEV_PUUID`, `DATABASE_URL`, `RIOT_API_KEY`, `RIOT_REGIONAL_ROUTE`/`RIOT_PLATFORM_ROUTE`, `CORS_ORIGINS`, `OLLAMA_BASE_URL` (loopback-only enforced), `OLLAMA_THINK`, `JOB_RETENTION_DAYS`, `SENTRY_DSN` (optional).
+All config is env-driven and zod-validated at boot (`apps/api/.env.example` is the reference). Notables: `API_AUTH_TOKEN` (required), `DEV_PUUID`, `DATABASE_URL`, `RIOT_API_KEY`, `RIOT_REGIONAL_ROUTE`/`RIOT_PLATFORM_ROUTE`, `CORS_ORIGINS`, `OLLAMA_BASE_URL` (loopback-only enforced), `OLLAMA_MODEL`, `OLLAMA_FREE_VRAM_MB`, `OLLAMA_THINK`, `ANALYSIS_LOCALE`, `ANALYSIS_WORKER_ENABLED`, `ANALYSIS_WORKER_POLL_MS`, `JOB_RETENTION_DAYS`, `SENTRY_DSN` (optional).
 
 ## Edge cases
 
