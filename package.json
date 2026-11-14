@@ -12,7 +12,8 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "verify:ci": "pnpm install --frozen-lockfile && pnpm -r build && pnpm -r test && node --test .devin/tests/config.test.mjs && docker compose config --quiet && docker compose -f docker-compose.backend.yml config --quiet && pnpm lint && pnpm format:check"
   },
   "devDependencies": {
     "eslint": "10.13.0",

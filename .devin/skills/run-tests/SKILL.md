@@ -38,6 +38,21 @@ Compose checks: `docker compose config --quiet` and `docker compose -f docker-co
 
 On Windows PowerShell, use `npm.cmd`/`pnpm.cmd` if execution policy blocks the `.ps1` shims; do not change execution policy. Environment quirks and output discipline: `.devin/references/env-windows.md`.
 
+## CI parity
+
+Local pre-push verification mirrors `.github/workflows/ci.yml` step order — `pnpm verify:ci` runs the whole sequence:
+
+1. `pnpm install --frozen-lockfile`
+2. `pnpm -r build` — before tests: consumers resolve workspace exports to `dist/`, which only exists after build.
+3. `pnpm -r test`
+4. `node --test .devin/tests/config.test.mjs`
+5. `docker compose config --quiet` and `docker compose -f docker-compose.backend.yml config --quiet`
+6. `pnpm lint`
+7. `pnpm format:check`
+
+- Never pipe a verification command through `tail` or filters that mask its exit status (`cmd | tail -4` reports `tail`'s status, not `cmd`'s) — run it un-piped (redirect output, filter after) and capture `EXIT=$?`, or run under `set -o pipefail` (`$?` then reflects the pipeline). Filtering output for display is allowed only after the command's own status was asserted.
+- After changing a `packages/*` workspace dependency, rebuild it before running consumer tests — a stale `dist/` passes locally and fails on a clean CI runner. To reproduce CI conditions, delete the package's `dist/` first.
+
 ## Agent Configuration
 
 When changing agent rules, skills, workflows, or MCP configuration, also run:
