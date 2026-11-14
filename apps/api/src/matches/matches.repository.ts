@@ -45,12 +45,10 @@ export class MatchesRepository {
 
   public async get(puuid: string, matchId: string): Promise<MatchRow | undefined> {
     const db = this.requireDb();
-    const rows = await db
-      .select()
-      .from(matches)
-      .where(and(eq(matches.puuid, puuid), eq(matches.matchId, matchId)))
-      .limit(1);
-    return rows[0];
+    const row = await db.query.matches.findFirst({
+      where: and(eq(matches.puuid, puuid), eq(matches.matchId, matchId)),
+    });
+    return row;
   }
 
   private requireDb(): DatabaseHandle["db"] {

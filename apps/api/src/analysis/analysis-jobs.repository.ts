@@ -26,52 +26,48 @@ export class AnalysisJobsRepository {
       analysisJobs.contractVersion,
       analysisJobs.promptVersion,
     ];
-    const inserted = await db.insert(analysisJobs).values(row).onConflictDoNothing({ target: dedupeKey }).returning();
-    if (inserted.length > 0) {
-      const result = { job: inserted[0], created: true };
+    const [inserted] = await db.insert(analysisJobs).values(row).onConflictDoNothing({ target: dedupeKey }).returning();
+    if (inserted) {
+      const result = { job: inserted, created: true };
       return result;
     }
-    const existing = await db
-      .select()
-      .from(analysisJobs)
-      .where(
-        and(
-          eq(analysisJobs.puuid, row.puuid),
-          eq(analysisJobs.matchId, row.matchId),
-          eq(analysisJobs.contractVersion, row.contractVersion),
-          eq(analysisJobs.promptVersion, row.promptVersion),
-        ),
-      )
-      .limit(1);
-    if (!existing[0]) {
+    const existing = await db.query.analysisJobs.findFirst({
+      where: and(
+        eq(analysisJobs.puuid, row.puuid),
+        eq(analysisJobs.matchId, row.matchId),
+        eq(analysisJobs.contractVersion, row.contractVersion),
+        eq(analysisJobs.promptVersion, row.promptVersion),
+      ),
+    });
+    if (!existing) {
       // ON CONFLICT waited for the racing insert, so the row must exist;
       // reaching this means a caller-supplied PK collided instead.
       throw new ApiException("JOB_DEDUPE_CONFLICT", "job insert conflicted on a non-dedupe key", HttpStatus.CONFLICT);
     }
-    if (existing[0].status === "failed") {
+    if (existing.status === "failed") {
       // A failed job is not terminal: re-enqueueing resets it to queued so a
       // transient failure (Ollama down, pull timeout) is retryable. The status
       // predicate keeps the update atomic — a claim or sweep landing between
       // the SELECT above and this UPDATE must not be clobbered.
-      const requeued = await db
+      const [requeued] = await db
         .update(analysisJobs)
         .set({ status: "queued", error: null, claimedAt: null, finishedAt: null })
-        .where(and(eq(analysisJobs.id, existing[0].id), eq(analysisJobs.status, "failed")))
+        .where(and(eq(analysisJobs.id, existing.id), eq(analysisJobs.status, "failed")))
         .returning();
-      if (requeued[0]) {
-        const result = { job: requeued[0], created: false };
+      if (requeued) {
+        const result = { job: requeued, created: false };
         return result;
       }
       // Lost the race: re-read the row — it is now queued/running/succeeded,
       // or gone (swept). Either way the current state is the honest answer.
-      const current = await db.select().from(analysisJobs).where(eq(analysisJobs.id, existing[0].id)).limit(1);
-      if (!current[0]) {
+      const current = await db.query.analysisJobs.findFirst({ where: eq(analysisJobs.id, existing.id) });
+      if (!current) {
         throw new ApiException("JOB_NOT_FOUND", "Job was deleted between dedupe and requeue", HttpStatus.NOT_FOUND);
       }
-      const result = { job: current[0], created: false };
+      const result = { job: current, created: false };
       return result;
     }
-    const result = { job: existing[0], created: false };
+    const result = { job: existing, created: false };
     return result;
   }
 
@@ -101,12 +97,10 @@ export class AnalysisJobsRepository {
 
   public async getForPuuid(puuid: string, id: string): Promise<AnalysisJobRow | undefined> {
     const db = this.requireDb();
-    const rows = await db
-      .select()
-      .from(analysisJobs)
-      .where(and(eq(analysisJobs.id, id), eq(analysisJobs.puuid, puuid)))
-      .limit(1);
-    return rows[0];
+    const row = await db.query.analysisJobs.findFirst({
+      where: and(eq(analysisJobs.id, id), eq(analysisJobs.puuid, puuid)),
+    });
+    return row;
   }
 
   public async listByPuuid(puuid: string): Promise<AnalysisJobRow[]> {
@@ -127,7 +121,7 @@ export class AnalysisJobsRepository {
       // Completing a queued/terminal row masks caller bugs — only running rows transition.
       .where(and(eq(analysisJobs.id, id), eq(analysisJobs.status, "running")))
       .returning();
-    const updated = rows[0];
+    const [updated] = rows;
     return updated;
   }
 
@@ -138,7 +132,7 @@ export class AnalysisJobsRepository {
       .set({ status: "failed", error, finishedAt: new Date() })
       .where(and(eq(analysisJobs.id, id), eq(analysisJobs.status, "running")))
       .returning();
-    const updated = rows[0];
+    const [updated] = rows;
     return updated;
   }
 
