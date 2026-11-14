@@ -10,6 +10,7 @@ import { validateEnv } from "./config/env.validation";
 import { DbModule } from "./db/db.module";
 import { HealthModule } from "./health/health.module";
 import { MatchesModule } from "./matches/matches.module";
+import { ReportsModule } from "./reports/reports.module";
 import { SharedModule } from "./shared/shared.module";
 
 @Module({
@@ -24,6 +25,7 @@ import { SharedModule } from "./shared/shared.module";
     DbModule,
     HealthModule,
     MatchesModule,
+    ReportsModule,
   ],
   // Throttle first, then authenticate.
   providers: [

@@ -3,8 +3,10 @@
 Turns a cached match into an AI coaching report. Manual trigger only: the
 caller enqueues a job, the in-process worker claims it and runs
 `packages/analysis` (pipeline internals: `docs/analysis.md`) against the
-local Ollama. Results live on the `analysis_jobs` row
-(`docs/analysis-jobs.md`) until the reports module (#21) exposes them.
+local Ollama. A succeeded job lands two writes: the full capture on the
+`analysis_jobs` row (`docs/analysis-jobs.md`) and the player-facing row in
+`reports` (`docs/reports.md`), written first so a succeeded job always has
+its report.
 
 ## Flow
 
@@ -26,8 +28,9 @@ promptVersion)`. Re-POSTing the same match+versions returns the existing
 Per claimed job: version guard → `detect` (Ollama reachable) →
 `getNormalized` (match cache) → `resolveModel` → `analyzeMatch` (metrics →
 moment detection → prompt → constrained generate → schema validation with
-one correction retry) → `markSucceeded` with the full capture (report,
-prompt, token usage, timings, retries, model digest). Failures land on
+one correction retry) → `reports.upsert` (the player-facing row) →
+`markSucceeded` with the full capture (report, prompt, token usage,
+timings, retries, model digest). Failures land on
 `markFailed` with the error message; a crashed worker's job is re-queued by
 the stale-claim sweep (see `docs/analysis-jobs.md`).
 

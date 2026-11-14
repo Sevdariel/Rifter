@@ -3,3 +3,4 @@
 // the generator sees the whole schema.
 export * from "../../matches/schema";
 export * from "../../analysis/schema";
+export * from "../../reports/schema";

@@ -12,6 +12,9 @@ import {
 import type { Env } from "../config/env.validation";
 import { MatchesService } from "../matches/matches.service";
 import { OllamaService } from "../ollama/ollama.service";
+import { ReportsService } from "../reports/reports.service";
+import type { RecordReportInput } from "../reports/reports.types";
+import type { CompleteJobInput } from "./analysis-jobs.types";
 import { AnalysisJobsService } from "./analysis-jobs.service";
 import type { AnalysisJobRow } from "./schema";
 import { loadPromptTemplate } from "./prompt-template";
@@ -36,6 +39,7 @@ export class AnalysisWorkerService implements OnModuleInit, OnApplicationShutdow
     private readonly analysisJobsService: AnalysisJobsService,
     private readonly matchesService: MatchesService,
     private readonly ollamaService: OllamaService,
+    private readonly reportsService: ReportsService,
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
@@ -116,14 +120,20 @@ export class AnalysisWorkerService implements OnModuleInit, OnApplicationShutdow
           generate: (req) => ollamaGenerateJson(clientConfig, req),
         },
       );
-      await this.analysisJobsService.markSucceeded(job.id, {
+      // Report row first: if markSucceeded then fails (racing claim), the row
+      // is simply overwritten on the next run. The reverse order would leave
+      // a succeeded job whose report can never be written — dedupe returns it.
+      const recordInput: RecordReportInput = { puuid: job.puuid, matchId: job.matchId, report: result.report };
+      await this.reportsService.record(recordInput);
+      const completeInput: CompleteJobInput = {
         report: result.report,
         prompt: result.prompt,
         modelDigest,
         tokenUsage: result.usage,
         timings: result.timings,
         retries: result.retries,
-      });
+      };
+      await this.analysisJobsService.markSucceeded(job.id, completeInput);
       this.logger.log(`job ${job.id} (${job.matchId}) succeeded in ${result.timings.totalMs} ms`);
     } catch (error: unknown) {
       const message = (error instanceof Error ? error.message : String(error)).slice(0, MAX_ERROR_LEN);
