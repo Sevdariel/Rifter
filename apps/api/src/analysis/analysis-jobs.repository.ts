@@ -5,6 +5,7 @@ import { DRIZZLE } from "../db/database";
 import type { DatabaseHandle } from "../db/db.types";
 import { ApiException } from "../shared/errors";
 import { toJobRow } from "./analysis-jobs.mapper";
+import type { CompleteJobInput } from "./analysis-jobs.types";
 import type { AnalysisJobRow, NewAnalysisJobRow } from "./schema";
 import { analysisJobs } from "./schema";
 
@@ -97,7 +98,7 @@ export class AnalysisJobsRepository {
 
   public async markSucceeded(
     id: string,
-    patch: Pick<AnalysisJobRow, "report" | "prompt" | "modelDigest" | "tokenUsage" | "timings" | "retries">,
+    patch: CompleteJobInput,
   ): Promise<AnalysisJobRow | undefined> {
     const db = this.requireDb();
     const rows = await db
