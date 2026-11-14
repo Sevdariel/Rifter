@@ -48,5 +48,60 @@ services:
     ports:
       - '127.0.0.1:4200:80'
 
+  # Local observability stack: `docker compose --profile observability up`.
+  # Alloy tails container logs into Loki; Prometheus scrapes the API's
+  # /metrics; Grafana exposes both on 127.0.0.1:3001.
+  loki:
+    image: grafana/loki:3.4.3
+    profiles: [observability]
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./deploy/observability/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - rifter-loki:/loki
+    ports:
+      - '127.0.0.1:3100:3100'
+
+  prometheus:
+    image: prom/prometheus:v3.4.0
+    profiles: [observability]
+    volumes:
+      - ./deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - rifter-prometheus:/prometheus
+    ports:
+      - '127.0.0.1:9090:9090'
+    depends_on:
+      - api
+
+  alloy:
+    image: grafana/alloy:v1.9.2
+    profiles: [observability]
+    # Docker Desktop maps the Windows named pipe onto the unix socket path.
+    volumes:
+      - ./deploy/observability/config.alloy:/etc/alloy/config.alloy:ro
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/tmp/alloy /etc/alloy/config.alloy
+    ports:
+      - '127.0.0.1:12345:12345'
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:12.0.2
+    profiles: [observability]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - rifter-grafana:/var/lib/grafana
+      - ./deploy/observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+    ports:
+      - '127.0.0.1:3001:3000'
+    depends_on:
+      - loki
+      - prometheus
+
 volumes:
   rifter-pgdata:
+  rifter-loki:
+  rifter-prometheus:
+  rifter-grafana:

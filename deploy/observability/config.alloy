@@ -1,0 +1,45 @@
+// Alloy: tail the local docker engine's containers and forward their
+// stdout/stderr JSON lines to Loki. On Windows Docker Desktop the named
+// pipe is mounted into the container as /var/run/docker.sock.
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  // Only this project's containers land in Loki — a developer's other
+  // containers could log secrets we have no business collecting.
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    regex         = "rifter.*"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+loki.source.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  targets          = discovery.docker.containers.targets
+  relabel_rules    = discovery.relabel.containers.rules
+  labels           = { job = "docker-logs" }
+  forward_to       = [loki.write.local.receiver]
+  refresh_interval = "5s"
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

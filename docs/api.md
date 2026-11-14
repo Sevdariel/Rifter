@@ -7,7 +7,7 @@ Rifter's NestJS backend. It holds the Riot API key, serves match data and analys
 ## Security model
 
 - **Bind**: `HOST` defaults to `127.0.0.1` — only local processes reach the API. Containers override to `0.0.0.0` (compose publishes the port instead).
-- **Auth**: every route requires the `X-Rifter-Token` custom header, timing-safe-compared against `API_AUTH_TOKEN` (required env — the API refuses to boot without it). The custom header also blocks browser CSRF/DNS-rebinding posts: cross-origin sends need a preflight the CORS allowlist rejects. `@Public()` exempts `/health` (and `/metrics` when it lands). RSO later replaces the token — the seam is `IdentityResolver`.
+- **Auth**: every route requires the `X-Rifter-Token` custom header, timing-safe-compared against `API_AUTH_TOKEN` (required env — the API refuses to boot without it). The custom header also blocks browser CSRF/DNS-rebinding posts: cross-origin sends need a preflight the CORS allowlist rejects. `@Public()` exempts `/health` and `/metrics`. RSO later replaces the token — the seam is `IdentityResolver`.
 - **Identity**: `IdentityResolver.resolve()` returns `{puuid}`; the dev impl reads `DEV_PUUID` and fails closed when unset. Handlers inject it via the `@Identity()` param decorator; every user-owned resource is scoped to that puuid (no IDOR).
 - **CORS**: allowlist from `CORS_ORIGINS` (comma-separated, default `http://localhost:4200`), credentials off. `helmet` sets baseline security headers.
 - **Throttling**: global `@nestjs/throttler` floor (300 req/min); stricter per-route limits land with the match-fetch and analyze endpoints that spend Riot calls and GPU minutes.
@@ -30,6 +30,7 @@ Vertical slices under `src/`: a slice owns its controller, service, DTOs, table-
 - `analysis/` — `analysis_jobs` queue + worker + endpoints: `POST /analysis/jobs`, `GET /analysis/jobs[/:id]` (`docs/analysis-jobs.md`, `docs/analysis-worker.md`).
 - `ollama/` — local Ollama lifecycle: detect/attach, VRAM-tier model selection, manifest-only pull, digest verify (`docs/analysis-worker.md`).
 - `reports/` — player-facing coaching reports: `GET /reports`, `GET /reports/:matchId`, written by the analysis worker (`docs/reports.md`).
+- `observability/` — pino request logging, prom-client `/metrics`, Sentry wiring (`docs/observability.md`).
 
 ## Configuration
 

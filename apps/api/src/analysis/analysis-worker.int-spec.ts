@@ -9,6 +9,7 @@ import type { DatabaseHandle } from "../db/db.types";
 import type { Env } from "../config/env.validation";
 import { matches } from "../matches/schema";
 import type { MatchesService } from "../matches/matches.service";
+import type { MetricsService } from "../observability/metrics.service";
 import type { OllamaService } from "../ollama/ollama.service";
 import { ReportsRepository } from "../reports/reports.repository";
 import { ReportsService } from "../reports/reports.service";
@@ -82,7 +83,11 @@ describe("analysis worker integration (testcontainers)", () => {
     await migrate(databaseHandle.db, { migrationsFolder: MIGRATIONS_FOLDER });
     jobsService = new AnalysisJobsService(new AnalysisJobsRepository(databaseHandle), config);
     reportsService = new ReportsService(new ReportsRepository(databaseHandle));
-    worker = new AnalysisWorkerService(jobsService, matchesService, ollamaService, reportsService, config);
+    const metricsStub = {
+      analysisJobs: { inc: vi.fn() },
+      analysisJobDuration: { observe: vi.fn() },
+    } as unknown as MetricsService;
+    worker = new AnalysisWorkerService(jobsService, matchesService, ollamaService, reportsService, metricsStub, config);
     await databaseHandle.db.insert(matches).values([
       { puuid: PUUID, matchId: MATCH_ID, queueId: 420, match: {} as MatchV5Match, timeline: {} as MatchV5Timeline },
       { puuid: PUUID, matchId: MATCH_ID_2, queueId: 420, match: {} as MatchV5Match, timeline: {} as MatchV5Timeline },

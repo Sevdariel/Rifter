@@ -3,9 +3,10 @@ import { ConfigService } from "@nestjs/config";
 import type { MatchV5Match, MatchV5Timeline } from "@rifter/analysis";
 
 import type { Env } from "../config/env.validation";
+import { MetricsService } from "../observability/metrics.service";
 import { ApiException } from "../shared/errors";
 import { RateLimiter } from "./rate-limiter";
-import type { ListMatchIdsParams, RateWindow, RiotAccount } from "./riot.types";
+import type { ListMatchIdsParams, RateWindow, RiotAccount, RiotEndpoint } from "./riot.types";
 
 /** Development-key rate limits: 20 req/1s burst, 100 req/2min sustained. */
 const RATE_WINDOWS: readonly RateWindow[] = [
@@ -29,11 +30,14 @@ export class RiotClientService {
   private readonly logger = new Logger(RiotClientService.name);
   private readonly limiter = new RateLimiter(RATE_WINDOWS);
 
-  public constructor(private readonly configService: ConfigService<Env, true>) {}
+  public constructor(
+    private readonly configService: ConfigService<Env, true>,
+    private readonly metricsService: MetricsService,
+  ) {}
 
   public async getAccountByRiotId(gameName: string, tagLine: string): Promise<RiotAccount> {
     const path = `/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
-    const account = await this.regional<RiotAccount>(path);
+    const account = await this.regional<RiotAccount>(path, "account-v1");
     return account;
   }
 
@@ -44,47 +48,59 @@ export class RiotClientService {
     if (params.startTime !== undefined) query.set("startTime", String(params.startTime));
     const suffix = query.size > 0 ? `?${query}` : "";
     const path = `/lol/match/v5/matches/by-puuid/${encodeURIComponent(puuid)}/ids${suffix}`;
-    const ids = await this.regional<string[]>(path);
+    const ids = await this.regional<string[]>(path, "match-v5.ids");
     return ids;
   }
 
   public async getMatch(matchId: string): Promise<MatchV5Match> {
-    const match = await this.regional<MatchV5Match>(`/lol/match/v5/matches/${encodeURIComponent(matchId)}`);
+    const match = await this.regional<MatchV5Match>(
+      `/lol/match/v5/matches/${encodeURIComponent(matchId)}`,
+      "match-v5.match",
+    );
     return match;
   }
 
   public async getTimeline(matchId: string): Promise<MatchV5Timeline> {
     const timeline = await this.regional<MatchV5Timeline>(
       `/lol/match/v5/matches/${encodeURIComponent(matchId)}/timeline`,
+      "match-v5.timeline",
     );
     return timeline;
   }
 
-  private async regional<T>(path: string): Promise<T> {
+  private async regional<T>(path: string, endpoint: RiotEndpoint): Promise<T> {
     const route = this.configService.get("RIOT_REGIONAL_ROUTE", { infer: true });
-    const body = await this.request<T>(`https://${route}.api.riotgames.com${path}`);
+    const body = await this.request<T>(`https://${route}.api.riotgames.com${path}`, endpoint);
     return body;
   }
 
   /** Platform-shard call (euw1 etc.); reserved for future platform APIs. */
   public async platform<T>(path: string): Promise<T> {
     const route = this.configService.get("RIOT_PLATFORM_ROUTE", { infer: true });
-    const body = await this.request<T>(`https://${route}.api.riotgames.com${path}`);
+    const body = await this.request<T>(`https://${route}.api.riotgames.com${path}`, "platform");
     return body;
   }
 
-  private async request<T>(url: string): Promise<T> {
+  private async request<T>(url: string, endpoint: RiotEndpoint): Promise<T> {
     const apiKey = this.configService.get("RIOT_API_KEY", { infer: true });
     if (!apiKey) {
       throw new ApiException("RIOT_NOT_CONFIGURED", "RIOT_API_KEY is not configured", HttpStatus.SERVICE_UNAVAILABLE);
     }
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       await this.limiter.acquire();
-      const res = await fetch(url, {
-        headers: { "X-Riot-Token": apiKey },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      let res: Response;
+      try {
+        res = await fetch(url, {
+          headers: { "X-Riot-Token": apiKey },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        });
+      } catch (error: unknown) {
+        this.metricsService.riotRequests.inc({ endpoint, status: "network_error" });
+        throw error;
+      }
+      this.metricsService.riotRequests.inc({ endpoint, status: String(res.status) });
       if (res.status === 429) {
+        this.metricsService.riotRateLimited.inc({ endpoint });
         void res.body?.cancel();
         if (attempt === MAX_RETRIES) break;
         const retryAfterS = Math.min(
