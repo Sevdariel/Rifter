@@ -6,6 +6,7 @@ import type { AnalysisResult, NormalizedMatch } from "@rifter/analysis";
 import type { Env } from "../config/env.validation";
 import type { MatchesService } from "../matches/matches.service";
 import type { OllamaService } from "../ollama/ollama.service";
+import type { ReportsService } from "../reports/reports.service";
 import type { AnalysisJobsService } from "./analysis-jobs.service";
 import { AnalysisWorkerService } from "./analysis-worker.service";
 import type { AnalysisJobRow } from "./schema";
@@ -59,6 +60,7 @@ function makeWorker(opts: {
   jobs: Partial<AnalysisJobsService>;
   matches?: Partial<MatchesService>;
   ollama?: Partial<OllamaService>;
+  reports?: Partial<ReportsService>;
   env?: Record<string, unknown>;
 }) {
   const env: Record<string, unknown> = { ANALYSIS_LOCALE: "pl", ...opts.env };
@@ -73,13 +75,18 @@ function makeWorker(opts: {
     getNormalized: vi.fn().mockResolvedValue({ matchId: MATCH_ID } as NormalizedMatch),
     ...opts.matches,
   };
+  const reports: Partial<ReportsService> = {
+    record: vi.fn().mockResolvedValue(undefined),
+    ...opts.reports,
+  };
   const worker = new AnalysisWorkerService(
     opts.jobs as AnalysisJobsService,
     matches as MatchesService,
     ollama as OllamaService,
+    reports as ReportsService,
     config,
   );
-  return { worker, ollama, matches };
+  return { worker, ollama, matches, reports };
 }
 
 describe("AnalysisWorkerService", () => {
@@ -90,7 +97,7 @@ describe("AnalysisWorkerService", () => {
   it("claims a job, runs the pipeline, and marks it succeeded with capture", async () => {
     const markSucceeded = vi.fn().mockResolvedValue(jobRow({ status: "succeeded" }));
     const claim = vi.fn().mockResolvedValueOnce(jobRow()).mockResolvedValue(undefined);
-    const { worker, ollama, matches } = makeWorker({ jobs: { claim, markSucceeded } });
+    const { worker, ollama, matches, reports } = makeWorker({ jobs: { claim, markSucceeded } });
 
     await worker.tick();
 
@@ -108,6 +115,11 @@ describe("AnalysisWorkerService", () => {
         tokenUsage: analysisResult.usage,
         retries: 1,
       }),
+    );
+    // The report row is written before the job is marked succeeded.
+    expect(reports.record).toHaveBeenCalledWith({ puuid: PUUID, matchId: MATCH_ID, report: analysisResult.report });
+    expect(vi.mocked(reports.record!).mock.invocationCallOrder[0]).toBeLessThan(
+      markSucceeded.mock.invocationCallOrder[0]!,
     );
   });
 
@@ -127,6 +139,18 @@ describe("AnalysisWorkerService", () => {
 
     await worker.tick();
     expect(markFailed).toHaveBeenCalledWith("job-1", "Ollama HTTP 500");
+  });
+
+  it("marks the job failed when the report write throws — never succeeded without a report", async () => {
+    const markSucceeded = vi.fn();
+    const markFailed = vi.fn().mockResolvedValue(jobRow({ status: "failed" }));
+    const claim = vi.fn().mockResolvedValueOnce(jobRow());
+    const record = vi.fn().mockRejectedValue(new Error("insert conflict"));
+    const { worker } = makeWorker({ jobs: { claim, markSucceeded, markFailed }, reports: { record } });
+
+    await worker.tick();
+    expect(markFailed).toHaveBeenCalledWith("job-1", "insert conflict");
+    expect(markSucceeded).not.toHaveBeenCalled();
   });
 
   it("marks the job failed when Ollama is unreachable at resolve time", async () => {

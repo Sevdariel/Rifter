@@ -10,6 +10,8 @@ import type { Env } from "../config/env.validation";
 import { matches } from "../matches/schema";
 import type { MatchesService } from "../matches/matches.service";
 import type { OllamaService } from "../ollama/ollama.service";
+import { ReportsRepository } from "../reports/reports.repository";
+import { ReportsService } from "../reports/reports.service";
 import { AnalysisJobsRepository } from "./analysis-jobs.repository";
 import { AnalysisJobsService } from "./analysis-jobs.service";
 import { AnalysisWorkerService } from "./analysis-worker.service";
@@ -33,7 +35,19 @@ const MATCH_ID = "EUN1_TEST0001";
 const MATCH_ID_2 = "EUN1_TEST0002";
 
 const analysisResult: AnalysisResult = {
-  report: { contractVersion: 1, summary: "ok" } as unknown as AnalysisResult["report"],
+  report: {
+    summary: "ok",
+    moments: [],
+    metadata: {
+      matchId: MATCH_ID,
+      patch: "15.1",
+      contractVersion: 1,
+      promptVersion: 2,
+      modelDigest: "sha256:aa",
+      locale: "en",
+      dataTier: "basic",
+    },
+  } as unknown as AnalysisResult["report"],
   prompt: "built prompt",
   usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
   retries: 0,
@@ -44,6 +58,7 @@ describe("analysis worker integration (testcontainers)", () => {
   let container: Awaited<ReturnType<PostgreSqlContainer["start"]>>;
   let databaseHandle: DatabaseHandle;
   let jobsService: AnalysisJobsService;
+  let reportsService: ReportsService;
   let worker: AnalysisWorkerService;
 
   const config = {
@@ -66,7 +81,8 @@ describe("analysis worker integration (testcontainers)", () => {
     databaseHandle = createDatabase(container.getConnectionUri());
     await migrate(databaseHandle.db, { migrationsFolder: MIGRATIONS_FOLDER });
     jobsService = new AnalysisJobsService(new AnalysisJobsRepository(databaseHandle), config);
-    worker = new AnalysisWorkerService(jobsService, matchesService, ollamaService, config);
+    reportsService = new ReportsService(new ReportsRepository(databaseHandle));
+    worker = new AnalysisWorkerService(jobsService, matchesService, ollamaService, reportsService, config);
     await databaseHandle.db.insert(matches).values([
       { puuid: PUUID, matchId: MATCH_ID, queueId: 420, match: {} as MatchV5Match, timeline: {} as MatchV5Timeline },
       { puuid: PUUID, matchId: MATCH_ID_2, queueId: 420, match: {} as MatchV5Match, timeline: {} as MatchV5Timeline },
@@ -95,6 +111,11 @@ describe("analysis worker integration (testcontainers)", () => {
     expect(finished.modelDigest).toBe("sha256:aa");
     expect(finished.tokenUsage).toMatchObject({ totalTokens: 15 });
     expect(finished.finishedAt).not.toBeNull();
+
+    // The report row was written by the worker before markSucceeded.
+    const stored = await reportsService.get(PUUID, MATCH_ID);
+    expect(stored.matchId).toBe(MATCH_ID);
+    expect(stored.report).toMatchObject({ summary: "ok" });
 
     // The queue is drained — a second tick is a no-op.
     await worker.tick();

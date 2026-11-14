@@ -29,7 +29,7 @@ Vertical slices under `src/`: a slice owns its controller, service, DTOs, table-
 - `matches/` — immutable Match-V5 cache (raw match + timeline JSONB), sync endpoints, normalize-on-read (`docs/matches.md`).
 - `analysis/` — `analysis_jobs` queue + worker + endpoints: `POST /analysis/jobs`, `GET /analysis/jobs[/:id]` (`docs/analysis-jobs.md`, `docs/analysis-worker.md`).
 - `ollama/` — local Ollama lifecycle: detect/attach, VRAM-tier model selection, manifest-only pull, digest verify (`docs/analysis-worker.md`).
-- Planned: `reports/` (see issues under epic #17).
+- `reports/` — player-facing coaching reports: `GET /reports`, `GET /reports/:matchId`, written by the analysis worker (`docs/reports.md`).
 
 ## Configuration
 
