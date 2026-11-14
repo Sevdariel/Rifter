@@ -27,7 +27,8 @@ Vertical slices under `src/`: a slice owns its controller, service, DTOs, table-
 - `db/` — global Drizzle/postgres.js pool + manual drizzle-kit migrations (`docs/api-database.md`).
 - `riot/` — Riot Games API client: sliding-window rate limits, `429`+`Retry-After`, regional/platform routing (`docs/matches.md`).
 - `matches/` — immutable Match-V5 cache (raw match + timeline JSONB), sync endpoints, normalize-on-read (`docs/matches.md`).
-- Planned: `analysis/`, `reports/`, `ollama/` (see issues under epic #17).
+- `analysis/` — `analysis_jobs` queue table + service (dedupe, SKIP LOCKED claim, retention sweep); the worker and endpoints land in #20 (`docs/analysis-jobs.md`).
+- Planned: `reports/`, `ollama/` (see issues under epic #17).
 
 ## Configuration
 
