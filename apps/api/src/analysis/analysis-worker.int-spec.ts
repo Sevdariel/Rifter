@@ -47,7 +47,7 @@ const analysisResult: AnalysisResult = {
       locale: "en",
       dataTier: "basic",
     },
-  } as unknown as AnalysisResult["report"],
+  } as AnalysisResult["report"],
   prompt: "built prompt",
   usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
   retries: 0,
