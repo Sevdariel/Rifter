@@ -576,3 +576,52 @@ test('CI builds the workspace before testing it', () => {
   assert.ok(buildAt > -1 && testAt > -1, 'both workspace steps exist');
   assert.ok(buildAt < testAt, 'workspace exports resolve to dist/, which only exists after build');
 });
+
+test('retrospective M2 process lessons stay pinned to their files', () => {
+  const runTests = read('.devin/skills/run-tests/SKILL.md');
+  for (const requirement of ['verify:ci', 'pipefail', 'stale `dist/`'])
+    assert.ok(runTests.includes(requirement), `run-tests: ${requirement}`);
+  const protocol = read(orchestrationPath);
+  for (const requirement of [
+    'Pre-gate self-check',
+    'CS-<issue-or-topic>-<n>',
+    '<issue-or-topic>-<role>-<n>',
+    'not supplied by parent',
+  ])
+    assert.ok(protocol.includes(requirement), `orchestrate: ${requirement}`);
+  const env = read('.devin/references/env-windows.md');
+  for (const requirement of ['`nul`', '.pnpm/', 'batch the two calls'])
+    assert.ok(env.includes(requirement), `env-windows: ${requirement}`);
+  const core = read('.devin/rules/core.md');
+  for (const requirement of ['ls docs/', 'more similar preferences are pending'])
+    assert.ok(core.includes(requirement), `core.md: ${requirement}`);
+  const backend = read('.devin/rules/backend.md');
+  for (const requirement of ['terminable', '.d.ts'])
+    assert.ok(backend.includes(requirement), `backend.md: ${requirement}`);
+  const githubSkill = read('.devin/skills/github/SKILL.md');
+  for (const requirement of ['--exit-status', 'job-tree'])
+    assert.ok(githubSkill.includes(requirement), `github SKILL.md: ${requirement}`);
+});
+
+test('root manifest verify:ci mirrors the CI workflow steps in order', () => {
+  const verify = json('package.json').scripts?.['verify:ci'];
+  assert.ok(verify, 'verify:ci script exists');
+  const ci = read('.github/workflows/ci.yml');
+  for (const step of [
+    'pnpm install --frozen-lockfile',
+    'pnpm -r build',
+    'pnpm -r test',
+    'node --test .devin/tests/config.test.mjs',
+    'docker compose config --quiet',
+    'docker compose -f docker-compose.backend.yml config --quiet',
+    'pnpm lint',
+    'pnpm format:check',
+  ]) {
+    assert.ok(ci.includes(step), `ci.yml: ${step}`);
+    assert.ok(verify.includes(step), `verify:ci: ${step}`);
+  }
+  assert.ok(
+    verify.indexOf('pnpm -r build') < verify.indexOf('pnpm -r test'),
+    'verify:ci builds before testing, like CI',
+  );
+});

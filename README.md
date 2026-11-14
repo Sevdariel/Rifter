@@ -40,6 +40,7 @@ docker compose --profile observability up          # adds Loki/Grafana/Prometheu
 pnpm --filter @rifter/api db:migrate    # apply DB migrations (explicit step)
 pnpm --filter @rifter/api test          # API unit + e2e tests, no Docker needed
 pnpm --filter @rifter/api test:int      # API integration tests (needs Docker)
+pnpm verify:ci                          # full CI-parity run: install, build, test, config tests, compose, lint, format
 ```
 
 Valid once the scaffold lands (M0). A Riot development API key goes in `apps/api/.env` — never committed.

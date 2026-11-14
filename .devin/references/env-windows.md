@@ -12,6 +12,8 @@ Toolchain facts discovered on this machine (Windows 11, MSYS shell, nvm4w Node).
 - `find` is Windows FIND (parameter errors on Unix flags) — use the `grep`/`find_file_by_name` tools, not `find`.
 - pnpm 12 requires build-script approval: `ERR_PNPM_IGNORED_BUILDS` → run `pnpm approve-builds` once; it writes `allowBuilds` in `pnpm-workspace.yaml` (the key is `allowBuilds`, not `onlyBuiltDependencies`).
 - `postgres:18+` mounts the named volume at `/var/lib/postgresql`, not `/var/lib/postgresql/data` (layout changed from earlier majors).
+- Never `>nul`/`2>nul` in the bash/MSYS shell — the cmd-ism creates a literal file named `nul` in cwd. Use `>/dev/null` or drop the redirect.
+- Installed package sources live under pnpm's virtual store: `node_modules/.pnpm/<name>@<ver>/node_modules/<name>/` — read `.d.ts` there instead of guessing paths.
 
 ## Docker authoring
 
@@ -21,7 +23,7 @@ Toolchain facts discovered on this machine (Windows 11, MSYS shell, nvm4w Node).
 
 ## Output discipline
 
-- `npm view <pkg> version` for latest, `npm view <pkg> time.<version>` for one publish date — never the full `time` table.
+- `npm view <pkg> version` for latest, `npm view <pkg> time.<version>` for one publish date — never the full `time` table. When checking several packages, batch the two calls per package in one pass.
 - Prefer `gh ... --json <fields> -q <jq>` over guessing field names (guesses print long `Unknown JSON field` errors).
 - `gh <cmd> --help` once per command per thread.
-- Long build/pull output: run with `--quiet`/tail where possible instead of streaming full logs.
+- Long build/pull output: run with `--quiet`/tail where possible instead of streaming full logs — except verification commands, where piping masks the exit status (see `.devin/skills/run-tests/SKILL.md` CI parity).

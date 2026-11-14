@@ -67,6 +67,8 @@ gh api repos/Sevdariel/Rifter/issues/<N> -q '.sub_issues_summary'
 
 Bulk seeding: drive `gh` from a Node script (`execFileSync`, manifest array of epics+tasks, same calls as above). Put such scripts in gitignored `.devin/tmp/` and remove them after the run.
 
+CI run watches after a push: `gh run watch <id> --exit-status` (exit status only) or sparse `gh run list` polls; open `gh run view --log-failed` only when a run is red. Never stream repeated full job-tree dumps — they are the largest output sink of a push cycle.
+
 ## Board status flow
 
 - `Todo` → `In Progress` when a session starts the task.

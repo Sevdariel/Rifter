@@ -70,13 +70,13 @@ Do not launch every role by default. Use repository research for local evidence,
 
 Before each launch, supply the worker with the following information; it does not inherit the parent conversation:
 
-- **Task ID**: unique assignment and role; distinguish authors from reviewers.
+- **Task ID**: unique assignment and role; distinguish authors from reviewers. The root generates it before every launch (`<issue-or-topic>-<role>-<n>`) — a report that arrives with "not supplied by parent" is a root contract violation, not a worker gap.
 - **Acceptance criteria**: observable outcomes and completion conditions. For multi-step implementation work, include an enumerated deliverables checklist (exact files/moves/renames/behavior changes expected); the worker's result contract must report the status of every checklist item, and the root verifies each against the worktree before closing the change set.
 - **Scope and exclusions**: bounded responsibility, read-only or implementation mode, and prohibited actions.
 - **Ownership**: exact writable files/directories, shared files reserved for integration, and the integration owner. Read-only roles have no writable source files.
 - **Dependencies**: prerequisite results, approved API contracts, and what may proceed independently.
 - **Context**: repository root, applicable rules/skills, relevant files and installed versions, and required MCP/source evidence. Supply a sanitized complete task-specific patch for final review and verification; before implementation, supply the source baseline and any known task changes without requiring a nonexistent patch. Public-researcher context must contain only sanitized public information and must not include repository access details.
-- **Change-set ID**: root-assigned version tied to the baseline revision, initial worktree state, and the current task patch/file manifest. Increment it after source, tests, configuration, or dependencies change; a HEAD hash alone does not identify uncommitted changes.
+- **Change-set ID**: root-assigned version (`CS-<issue-or-topic>-<n>`) tied to the baseline revision, initial worktree state, and the current task patch/file manifest. The root supplies it in every delegation prompt and increments it after source, tests, configuration, or dependencies change; a HEAD hash alone does not identify uncommitted changes.
 - **Verification**: required checks, permitted commands/resources, expected test discovery, and result format below.
 
 Inspect the initial worktree before writing. Preserve unrelated user work, and distinguish task changes from the initial staged, unstaged, and untracked changes. Include new files and relevant surrounding code in review, not just staged diffs. The root supplies read-only reviewers with the patch and baseline evidence because they have no general shell access. If the baseline or complete task patch cannot be established, resolve that limitation before claiming a complete review.
@@ -91,6 +91,16 @@ Do not copy credentials, tokens, private user data, or unnecessary proprietary c
 4. Workers add failing behavior/regression tests before fixes where feasible, implement only their assignment, and run assigned focused checks. Shared build outputs, test databases, ports, and suites also need exclusive ownership. No concurrent runners against the same suite/resources.
 5. Integrate completed assignments, stop writers, and establish a stable change-set ID before final review and tests. Read-only review and disjoint verification may run concurrently on that stable state. Do not edit reviewed inputs while either is running.
 6. Apply findings only after collecting the relevant reports. Any later changes invalidate affected review/test evidence; update the change-set ID, rerun impacted checks, and have the reviewer recheck fixes. Retain other results only with an explicit unchanged-input/dependency justification, never by silently relabeling old evidence.
+
+### Pre-gate self-check
+
+Before launching reviewers, the root re-reads its own complete diff against the recurring defect classes that independent gates keep catching:
+
+- Mutating SQL carries the assumed state predicate in `WHERE` (for example `UPDATE ... WHERE status = 'failed'`), not just the row identity — a stale write without it can revert a live claim.
+- Every framework hook, interceptor, and middleware is positioned correctly in the pipeline relative to the component that produces the value it reads — an RxJS `finalize()` runs before the exception filter writes the final status, so response-status metrics belong in express middleware observing `res.once("finish")`. Cite the ordering rule the implementation relies on.
+- Committed configuration is platform-portable: no OS-only absolute paths or named pipes (`//./pipe/*`); parameterize with `${VAR:-sensible_default}` and document the override.
+- Build and packaging manifests include every workspace dependency a consumer resolves — `workspace:*` packages must be copied into Dockerfiles and deploy outputs.
+- Mocked dependencies feeding unbounded loops (pagination, polling, retry) terminate — an always-full-page mock with continue-on-error code never exits.
 
 ## Independent verification
 
