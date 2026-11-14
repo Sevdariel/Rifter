@@ -2,6 +2,7 @@ import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { and, desc, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
 
 import { DRIZZLE } from "../db/database";
+import { requireDb } from "../db/require-db";
 import type { DatabaseHandle } from "../db/db.types";
 import { ApiException } from "../shared/errors";
 import { toJobRow } from "./analysis-jobs.mapper";
@@ -19,7 +20,7 @@ export class AnalysisJobsRepository {
    * On conflict the existing row is loaded and returned with created=false.
    */
   public async enqueue(row: NewAnalysisJobRow): Promise<{ job: AnalysisJobRow; created: boolean }> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const dedupeKey = [
       analysisJobs.puuid,
       analysisJobs.matchId,
@@ -77,7 +78,7 @@ export class AnalysisJobsRepository {
    * never take the same row. Returns undefined when the queue is empty.
    */
   public async claim(): Promise<AnalysisJobRow | undefined> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const rows = await db.execute(sql`
       UPDATE ${analysisJobs}
       SET status = 'running', claimed_at = now(), attempts = ${analysisJobs.attempts} + 1
@@ -96,7 +97,7 @@ export class AnalysisJobsRepository {
   }
 
   public async getForPuuid(puuid: string, id: string): Promise<AnalysisJobRow | undefined> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const row = await db.query.analysisJobs.findFirst({
       where: and(eq(analysisJobs.id, id), eq(analysisJobs.puuid, puuid)),
     });
@@ -104,7 +105,7 @@ export class AnalysisJobsRepository {
   }
 
   public async listByPuuid(puuid: string): Promise<AnalysisJobRow[]> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const rows = await db
       .select()
       .from(analysisJobs)
@@ -114,7 +115,7 @@ export class AnalysisJobsRepository {
   }
 
   public async markSucceeded(id: string, patch: CompleteJobInput): Promise<AnalysisJobRow | undefined> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const rows = await db
       .update(analysisJobs)
       .set({ ...patch, status: "succeeded", finishedAt: new Date() })
@@ -126,7 +127,7 @@ export class AnalysisJobsRepository {
   }
 
   public async markFailed(id: string, error: string): Promise<AnalysisJobRow | undefined> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const rows = await db
       .update(analysisJobs)
       .set({ status: "failed", error, finishedAt: new Date() })
@@ -141,7 +142,7 @@ export class AnalysisJobsRepository {
    * ago than `staleMs` goes back to `queued` so it can be claimed again.
    */
   public async requeueStale(staleMs: number): Promise<number> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const cutoff = new Date(Date.now() - staleMs);
     const rows = await db
       .update(analysisJobs)
@@ -154,7 +155,7 @@ export class AnalysisJobsRepository {
 
   /** Deletes terminal jobs finished more than `retentionDays` ago. */
   public async sweepRetention(retentionDays: number): Promise<number> {
-    const db = this.requireDb();
+    const db = requireDb(this.databaseHandle);
     const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
     const rows = await db
       .delete(analysisJobs)
@@ -168,12 +169,5 @@ export class AnalysisJobsRepository {
       .returning({ id: analysisJobs.id });
     const count = rows.length;
     return count;
-  }
-
-  private requireDb(): DatabaseHandle["db"] {
-    if (!this.databaseHandle) {
-      throw new ApiException("DB_NOT_CONFIGURED", "DATABASE_URL is not configured", HttpStatus.SERVICE_UNAVAILABLE);
-    }
-    return this.databaseHandle.db;
   }
 }
