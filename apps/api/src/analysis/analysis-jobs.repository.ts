@@ -96,10 +96,7 @@ export class AnalysisJobsRepository {
     return rows;
   }
 
-  public async markSucceeded(
-    id: string,
-    patch: CompleteJobInput,
-  ): Promise<AnalysisJobRow | undefined> {
+  public async markSucceeded(id: string, patch: CompleteJobInput): Promise<AnalysisJobRow | undefined> {
     const db = this.requireDb();
     const rows = await db
       .update(analysisJobs)
