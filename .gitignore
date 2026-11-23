@@ -12,6 +12,8 @@ target/
 !.env.example
 *.pem
 *.key
+# Local web runtime config override (holds API token / Sentry DSN)
+apps/web/public/config.local.json
 
 # Agent local configuration and telemetry
 .devin/mcp_config.local.json

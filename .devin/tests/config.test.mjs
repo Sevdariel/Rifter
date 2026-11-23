@@ -99,9 +99,30 @@ test('local agent configuration and personal data stay gitignored', () => {
     '.figma-refs/',
     '*.rofl',
     '.env',
+    'apps/web/public/config.local.json',
   ]) {
     assert.ok(ignore.split(/\r?\n/).includes(entry), entry);
   }
+  // The web API token file must also stay out of Docker build contexts and
+  // ng build artifacts — gitignore alone does not stop COPY/public globs.
+  assert.ok(
+    read('.dockerignore').split(/\r?\n/).includes('apps/web/public/config.local.json'),
+    'apps/web/public/config.local.json missing from .dockerignore',
+  );
+  // The ignore must live in the production configuration: the shared options
+  // block also applies to `ng serve`, which must still serve the overlay.
+  const assets =
+    json('apps/web/angular.json').projects.web.architect.build.configurations.production.assets;
+  assert.ok(
+    assets.some((a) => a.ignore?.includes('config.local.json')),
+    'angular.json production assets must ignore config.local.json',
+  );
+  assert.ok(
+    !json('apps/web/angular.json').projects.web.architect.build.options.assets.some((a) =>
+      a.ignore?.includes('config.local.json'),
+    ),
+    'dev-server assets must keep serving config.local.json',
+  );
 });
 
 test('project skills have discoverable names, descriptions, and explicit triggers', () => {

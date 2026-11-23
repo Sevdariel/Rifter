@@ -1,0 +1,100 @@
+<div class="page">
+  <header class="page-header">
+    <h1>Dev harness — matches</h1>
+    <span class="dev-badge">dev-only</span>
+  </header>
+
+  @if (!config.isConfigured) {
+    <p class="banner warn">
+      No API token configured. Copy <code>public/config.json</code> to
+      <code>public/config.local.json</code> and set <code>apiToken</code>.
+    </p>
+  }
+
+  @if (error(); as message) {
+    <p class="banner error" role="alert">{{ message }}</p>
+  }
+
+  <section class="controls" aria-label="Sync controls">
+    <button type="button" (click)="syncRecent()" [disabled]="busy()">Sync recent 5</button>
+    <button
+      type="button"
+      (click)="syncAll()"
+      [disabled]="busy() || (syncStatus()?.running ?? false)"
+    >
+      Sync all
+    </button>
+    <button type="button" (click)="refresh()" [disabled]="busy()">Refresh</button>
+    @if (syncStatus(); as sync) {
+      <span class="sync-status">
+        {{ sync.running ? 'syncing…' : sync.done ? 'done' : 'idle' }}
+        — {{ sync.stored }} stored, {{ sync.skippedCached }} cached, {{ sync.skippedNonSr }} non-SR,
+        {{ sync.failed }} failed
+        @if (sync.lastError) {
+          (last error: {{ sync.lastError }})
+        }
+      </span>
+    }
+  </section>
+
+  @if (rows().length === 0) {
+    <p class="empty">No matches stored. Run a sync first.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Match</th>
+          <th>Queue</th>
+          <th>Played</th>
+          <th>Duration</th>
+          <th>Tier</th>
+          <th>Job</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.match.matchId) {
+          <tr>
+            <td class="mono">{{ row.match.matchId }}</td>
+            <td>{{ queueName(row.match.queueId) }}</td>
+            <td>
+              {{
+                row.match.gameCreationMs
+                  ? (row.match.gameCreationMs | date: 'yyyy-MM-dd HH:mm')
+                  : '—'
+              }}
+            </td>
+            <td>{{ duration(row.match.gameDurationSec) }}</td>
+            <td>
+              @if (row.report) {
+                <span class="tier" [class.tier-full]="row.report.dataTier === 'full'">
+                  {{ row.report.dataTier }}
+                </span>
+              } @else {
+                —
+              }
+            </td>
+            <td>
+              @if (row.job) {
+                <span [class]="'job job-' + row.job.status">{{ row.job.status }}</span>
+                @if (row.job.error) {
+                  <span class="job-error" [title]="row.job.error">!</span>
+                }
+              } @else {
+                —
+              }
+            </td>
+            <td class="actions">
+              <button type="button" (click)="analyze(row.match.matchId)" [disabled]="busy()">
+                Analyze
+              </button>
+              @if (row.report) {
+                <a [routerLink]="['/dev/reports', row.match.matchId]">Report</a>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

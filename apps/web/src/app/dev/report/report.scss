@@ -1,0 +1,147 @@
+:host {
+  display: block;
+}
+
+.page {
+  padding: 24px;
+  color: #d8dade;
+  font-family: system-ui, sans-serif;
+  max-width: 1100px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h1 {
+    font-size: 22px;
+    margin: 0;
+  }
+}
+
+.back {
+  color: #7ab3e0;
+}
+
+.dev-badge {
+  padding: 2px 8px;
+  border: 2px solid #8a6d3b;
+  border-radius: 4px;
+  color: #e0b85c;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.banner.error {
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: #3d2020;
+  border: 2px solid #8a3b3b;
+  color: #e08e8e;
+}
+
+.metadata {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0;
+  }
+
+  dt {
+    font-size: 12px;
+    color: #9aa0a8;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.tier {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #3a3f4a;
+  font-size: 12px;
+
+  &.tier-full {
+    background: #1f4d33;
+    color: #7ad9a4;
+  }
+}
+
+h2 {
+  font-size: 16px;
+  margin: 20px 0 8px;
+}
+
+.summary {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 2px solid #2e3340;
+    vertical-align: top;
+  }
+
+  th {
+    color: #9aa0a8;
+    font-weight: 600;
+  }
+
+  tr.top td {
+    background: #2a2f1d;
+  }
+}
+
+.top-badge {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #4d4620;
+  color: #e0b85c;
+  font-size: 12px;
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+details {
+  margin-top: 20px;
+
+  summary {
+    cursor: pointer;
+    color: #9aa0a8;
+  }
+
+  pre {
+    overflow: auto;
+    padding: 12px;
+    background: #1a1d26;
+    border-radius: 4px;
+  }
+}
+
+.empty {
+  color: #9aa0a8;
+}

@@ -45,6 +45,8 @@ pnpm verify:ci                          # full CI-parity run: install, build, te
 
 Valid once the scaffold lands (M0). A Riot development API key goes in `apps/api/.env` — never committed.
 
+The web app serves a dev harness at `/dev` (sync, analyze, view reports — `docs/dev-harness.md`). It needs `apps/web/public/config.local.json` (gitignored) with `apiToken` matching `API_AUTH_TOKEN` in `apps/api/.env`.
+
 ## Documentation
 
 - `docs/<feature-or-area>.md` — living per-feature docs (business purpose, then technical notes), updated in the same change as the work (policy: `docs/agent-documentation.md`)

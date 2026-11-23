@@ -33,6 +33,13 @@
           },
           "configurations": {
             "production": {
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "public",
+                  "ignore": ["config.local.json"]
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
