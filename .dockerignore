@@ -12,3 +12,4 @@ ToDO
 **/.env
 **/.env.*
 !**/.env.example
+apps/web/public/config.local.json

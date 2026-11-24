@@ -1,0 +1,88 @@
+<div class="page">
+  <header class="page-header">
+    <a routerLink="/dev/matches" class="back">← matches</a>
+    <h1>Report — {{ matchId() }}</h1>
+    <span class="dev-badge">dev-only</span>
+  </header>
+
+  @if (reportResource.isLoading()) {
+    <p class="empty">Loading…</p>
+  } @else if (errorMessage(); as message) {
+    <p class="banner error" role="alert">{{ message }}</p>
+  } @else if (reportResource.value(); as detail) {
+    <section class="metadata" aria-label="Report metadata">
+      <span class="tier" [class.tier-full]="detail.dataTier === 'full'">{{ detail.dataTier }}</span>
+      <dl>
+        <div>
+          <dt>locale</dt>
+          <dd>{{ detail.locale }}</dd>
+        </div>
+        <div>
+          <dt>patch</dt>
+          <dd>{{ detail.report.metadata.patch }}</dd>
+        </div>
+        <div>
+          <dt>contract</dt>
+          <dd>v{{ detail.contractVersion }}</dd>
+        </div>
+        <div>
+          <dt>prompt</dt>
+          <dd>v{{ detail.promptVersion }}</dd>
+        </div>
+        <div>
+          <dt>model</dt>
+          <dd class="mono" [title]="detail.modelDigest ?? ''">{{ detail.modelDigest ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>updated</dt>
+          <dd>{{ detail.updatedAt }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section aria-label="Summary">
+      <h2>Summary</h2>
+      <p class="summary">{{ detail.report.summary }}</p>
+    </section>
+
+    <section aria-label="Moments">
+      <h2>Moments ({{ detail.report.moments.length }})</h2>
+      @if (moments().length === 0) {
+        <p class="empty">No moments in this report.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Time</th>
+              <th>Label</th>
+              <th>Mistake</th>
+              <th>Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (moment of moments(); track moment.index) {
+              <tr [class.top]="moment.isTop">
+                <td>
+                  {{ moment.index }}
+                  @if (moment.isTop) {
+                    <span class="top-badge">top</span>
+                  }
+                </td>
+                <td class="mono">{{ moment.range }}</td>
+                <td>{{ moment.label }}</td>
+                <td>{{ moment.mistake }}</td>
+                <td>{{ moment.fix }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <details>
+      <summary>Raw report JSON</summary>
+      <pre class="mono">{{ rawJson() }}</pre>
+    </details>
+  }
+</div>

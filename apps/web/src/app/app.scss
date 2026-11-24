@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 24px;
+  background: #14161d;
+  border-bottom: 2px solid #2e3340;
+  color: #d8dade;
+  font-family: system-ui, sans-serif;
+
+  .brand {
+    font-weight: 700;
+  }
+
+  nav a {
+    color: #9aa0a8;
+    text-decoration: none;
+    font-size: 14px;
+
+    &.active {
+      color: #d8dade;
+    }
+  }
+
+  .env {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #4d4620;
+    color: #e0b85c;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+}
